@@ -1,7 +1,9 @@
+import * as pk from './passkey';
+
 type FlagValue = string | number | boolean;
 type Flags = Record<string, FlagValue>;
 type FlagDef = { key: string; label: string; options: FlagValue[]; help: string };
-type Preset = { id: string; title: string; text: string; flags: Flags };
+type Preset = { id: string; group: 'core' | 'extra'; title: string; text: string; flags: Flags };
 type OptionState = Record<string, Array<{ value: FlagValue; ok: boolean; reason: string }>>;
 
 type Run = {
@@ -29,7 +31,7 @@ type Run = {
 
 type Probe = { up: boolean; ms: number; value?: unknown; error?: string };
 type Wallet = { network: string; scheme: string; deployed: boolean; account?: string; ethWei?: string | null; tusdWei?: string | null; stakeWei?: string; staked?: boolean };
-type Status = { localBlock: Probe; devnetBlock: Probe; sidecar: Probe; devnetSidecar: Probe; node: Probe; reputation: Probe; wallets: Wallet[]; running: Flags | null };
+type Status = { localBlock: Probe; devnetBlock: Probe; sidecar: Probe; devnetSidecar: Probe; node: Probe; devnetNode: Probe; reputation: Probe; wallets: Wallet[]; running: Flags | null };
 type Check = { rule: string; verdict: string; detail?: string; entity?: string; frameIndex?: number; name?: string };
 type Admission = { id: number; txHash?: string; envelopeId?: string; sender?: string; at: number; outcome: string; checks: Check[] };
 type RuleText = { id: string; name: string; text: string };
@@ -52,12 +54,18 @@ let mempoolView: 'standard' | 'sealed' = 'standard';
 let sealedInfo: SealedInfo | null = null;
 
 const pages: Record<string, { label: string; meta: string }> = {
-  overview: { label: 'Overview', meta: 'Runs, results and service health' },
-  flags: { label: 'Flags', meta: 'Switch network, lane, scheme, bot and limits' },
-  checks: { label: 'Admission checks', meta: 'ERC-8421 rule report for each frame transaction' },
-  sealed: { label: 'Sealed lane', meta: 'Envelopes, door checks and who opened them' },
-  wallets: { label: 'PQ wallets', meta: 'Quantum-safe accounts, stake and balances' }
+  overview: { label: 'Run', meta: 'Pick a scenario and run it' },
+  flags: { label: 'Settings', meta: 'Every option, one place' },
+  checks: { label: 'Checks', meta: 'Why the mempool let each transaction in' },
+  sealed: { label: 'Sealed', meta: 'Encrypted envelopes and who opened them' },
+  wallets: { label: 'Wallets', meta: 'Quantum-safe accounts and balances' }
 };
+
+type PasskeyWallet = { network: string; available: boolean; account?: string; created?: boolean; ethWei?: string | null };
+type PasskeyStatus = { unlocked: boolean; id?: string; wallets?: PasskeyWallet[] };
+let passkeyStatus: PasskeyStatus = { unlocked: false };
+let passkeyBusy = false;
+let keyLoaded = false;
 
 
 function readStoredFlags(): Flags {
@@ -131,13 +139,54 @@ function activateTab(name: string) {
   if (name === 'checks') void loadAdmissions();
 }
 
+function showLive(name: string) {
+  $$<HTMLButtonElement>('#live-tabs button').forEach((b) => {
+    const on = b.dataset.live === name;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-selected', String(on));
+  });
+  $$('[data-live-panel]').forEach((p) => { p.hidden = p.dataset.livePanel !== name; });
+}
+
+function clearResult() {
+  $('#run-meta').textContent = flags.network === 'devnet' ? 'No runs on the devnet yet.' : 'No runs on the local chain yet.';
+  $$('[data-r]').forEach((n) => { n.textContent = '—'; });
+  $('#verdict').hidden = true;
+  $('#verdict-empty').hidden = false;
+  renderTxs(null);
+  $('#run-state').textContent = 'idle';
+  showLive('log');
+}
+
+function showLatestRun() {
+  if (running) return;
+  $('#log').textContent = '';
+  const last = runs.find((r) => r.flags.network === flags.network);
+  if (!last) return clearResult();
+  setResult(last);
+  $('#run-state').textContent = 'last run';
+  showLive('result');
+}
+
 function renderFacts() {
-  $('#side-network').replaceChildren(el('i'), document.createTextNode(flags.network === 'devnet' ? ' Public hackathon devnet' : ' Local EIP-8141 chain'));
+  $('#side-network').replaceChildren(el('i'), document.createTextNode(flags.network === 'devnet' ? ' Public hackathon devnet' : ' Our local chain'));
+  $$<HTMLButtonElement>('#net-switch button').forEach((b) => {
+    const on = b.dataset.net === flags.network;
+    b.classList.toggle('on', on);
+    b.setAttribute('aria-pressed', String(on));
+  });
   $('#checks-net').textContent = `ALT MEMPOOL · ${String(flags.network).toUpperCase()}`;
   renderPresets();
   renderSummary();
+  renderPasskey();
+  if (lastNetwork !== flags.network) {
+    lastNetwork = String(flags.network);
+    showLatestRun();
+  }
   void checkFlags();
 }
+
+let lastNetwork = '';
 
 function setFlags(next: Flags) {
   flags = next;
@@ -149,32 +198,132 @@ function sameFlags(a: Flags, b: Flags) {
   return schema.every((d) => a[d.key] === b[d.key]);
 }
 
+const presetFor = (f: Flags) => presets.find((p) => sameFlags({ ...p.flags, network: f.network }, f));
+
 function renderPresets() {
-  $('#presets').replaceChildren(...presets.map((p) => {
-    const b = el('button', `preset${sameFlags(flags, p.flags) ? ' on' : ''}`) as HTMLButtonElement;
-    b.type = 'button';
-    b.setAttribute('aria-pressed', String(sameFlags(flags, p.flags)));
-    b.append(el('strong', '', p.title), el('span', '', p.text));
-    b.addEventListener('click', () => setFlags({ ...p.flags }));
-    return b;
-  }));
+  const select = $<HTMLSelectElement>('#scenario');
+  const current = presetFor(flags);
+  const group = (label: string, list: Preset[]) => {
+    const g = document.createElement('optgroup');
+    g.label = label;
+    g.append(...list.map((p) => {
+      const o = document.createElement('option');
+      o.value = p.id;
+      o.textContent = p.title;
+      return o;
+    }));
+    return g;
+  };
+  const options: HTMLElement[] = [group('LeanSeal', presets.filter((p) => p.group === 'core')), group('Extras', presets.filter((p) => p.group !== 'core'))];
+  if (!current) {
+    const o = document.createElement('option');
+    o.value = '';
+    o.textContent = 'Custom settings';
+    options.unshift(o);
+  }
+  select.replaceChildren(...options);
+  select.value = current?.id ?? '';
 }
 
+const LANE_TEXT: Record<string, string> = { public: 'Public mempool', sealed: 'Encrypted, then public', batch: 'Sealed mempool → batch auction' };
+
 function renderSummary() {
-  const p = $('#run-summary');
-  const what = flags.action === 'swap' ? 'swaps 0.0001 ETH for tUSD' : 'sends 1 gwei';
-  const where = flags.network === 'devnet' ? 'on the public hackathon devnet' : 'on our local chain';
-  const lane = flags.lane === 'batch'
-    ? 'into a sealed batch auction: only a hash goes on chain, nodes reveal it at a drand round and the whole batch fills at one price'
-    : flags.lane === 'sealed'
-      ? 'in a sealed envelope that opens publicly at a drand deadline'
-      : 'through the public alt mempool, where anyone can read it';
-  const scheme = flags.scheme === 'lss' ? 'leanSphincs-s (fast, fits 100k unstaked)' : 'SLH-DSA SHA2 (NIST, staked wallet)';
-  const bot = flags.action === 'swap' && flags.network === 'local' ? (flags.mevBot ? ' A sandwich bot is watching.' : ' No bot.') : '';
-  p.replaceChildren(
-    document.createTextNode('Alice '), el('b', '', what), document.createTextNode(` ${where} `), el('b', '', lane),
-    document.createTextNode(', signed with '), el('b', '', scheme), document.createTextNode(`.${bot}`)
+  const current = presetFor(flags);
+  $('#scenario-text').textContent = current?.text ?? 'Your own mix of settings.';
+  const facts: Array<[string, string]> = [
+    ['Route', flags.action === 'swap' ? LANE_TEXT[String(flags.lane)] ?? String(flags.lane) : 'Send 1 gwei'],
+    ['Wallet', `${flags.wallet === 'passkey' ? 'Your passkey' : 'Demo'} · ${flags.scheme === 'lss' ? 'leanSphincs-s' : 'SHA2'}`],
+    ['Gas', flags.gas === 'sponsor' ? 'Free (sponsor pays)' : 'Wallet pays'],
+  ];
+  $('#scenario-facts').replaceChildren(...facts.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v)]));
+}
+
+function passkeyWallet() {
+  return passkeyStatus.wallets?.find((w) => w.network === flags.network);
+}
+
+function pkButton(text: string, onClick: () => Promise<void>, ghost = false) {
+  const b = el('button', ghost ? 'ghost' : '', text) as HTMLButtonElement;
+  b.type = 'button';
+  b.disabled = passkeyBusy;
+  b.addEventListener('click', () => {
+    passkeyBusy = true;
+    renderPasskey();
+    onClick().catch((e: Error) => showMessage(e.message)).finally(() => { passkeyBusy = false; renderPasskey(); });
+  });
+  return b;
+}
+
+function renderPasskey() {
+  const text = $('#pk-text');
+  const actions = $('#pk-actions');
+  const blocked = pk.supported();
+  if (blocked) {
+    text.textContent = blocked;
+    actions.replaceChildren();
+    return;
+  }
+  if (!passkeyStatus.unlocked || !keyLoaded) {
+    text.textContent = 'Sign in with Face ID or a fingerprint. Your quantum-safe key is made here, in this browser.';
+    actions.replaceChildren(
+      pkButton(pk.hasCredential() ? 'Unlock with passkey' : 'Create passkey', () => unlock(!pk.hasCredential())),
+      ...(pk.hasCredential() ? [pkButton('Use a new passkey', () => unlock(true), true)] : [])
+    );
+    return;
+  }
+  const w = passkeyWallet();
+  const net = flags.network === 'devnet' ? 'devnet' : 'local chain';
+  if (!w?.available) {
+    text.textContent = `Unlocked. Wallets are not set up on the ${net} yet.`;
+    actions.replaceChildren(pkButton('Lock', lock, true));
+    return;
+  }
+  text.replaceChildren(el('span', 'mono', short(w.account)), document.createTextNode(w.created ? ` · ${eth(w.ethWei)}` : ` · not created on the ${net} yet`));
+  actions.replaceChildren(
+    ...(w.created
+      ? [pkButton('Swap with my wallet', async () => { setFlags({ ...(presets.find((p) => p.id === 'passkey')?.flags ?? flags), network: flags.network }); activateTab('overview'); })]
+      : [pkButton('Create my wallet (free)', () => createWallet())]),
+    pkButton('Lock', lock, true)
   );
+}
+
+async function unlock(create: boolean) {
+  const prf = create ? await pk.createPasskey() : await pk.unlockPasskey();
+  const key = await pk.loadKey(prf);
+  keyLoaded = true;
+  const res = await fetch('/api/passkey', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(key) });
+  if (!res.ok) throw new Error(((await res.json()) as { error: string }).error);
+  passkeyStatus = await res.json() as PasskeyStatus;
+  void checkFlags();
+}
+
+async function lock() {
+  pk.forget();
+  keyLoaded = false;
+  await fetch('/api/passkey', { method: 'DELETE' });
+  passkeyStatus = { unlocked: false };
+  void checkFlags();
+}
+
+async function refreshPasskey() {
+  const res = await fetch('/api/passkey').catch(() => null);
+  if (!res?.ok) return;
+  passkeyStatus = await res.json() as PasskeyStatus;
+  renderPasskey();
+}
+
+async function createWallet() {
+  const res = await fetch('/api/passkey/onboard', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ network: flags.network }) });
+  if (res.status !== 202) throw new Error(((await res.json()) as { error: string }).error);
+  activateTab('overview');
+}
+
+async function answerSign(e: { reqId: string; id: string; digest: string }) {
+  if (!keyLoaded || passkeyStatus.id !== e.id) return;
+  const t0 = performance.now();
+  const signature = await pk.sign(e.digest);
+  logLine('sys', `PASSKEY signed ${short(e.digest)} in this browser (${Math.round(performance.now() - t0)} ms)`);
+  await fetch('/api/sign/respond', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify({ reqId: e.reqId, signature }) });
 }
 
 function segFor(def: FlagDef) {
@@ -194,7 +343,7 @@ function segFor(def: FlagDef) {
 }
 
 function renderControls() {
-  $('#quick-flags').replaceChildren(...schema.map((def) => {
+  $('#quick-flags').replaceChildren(...schema.filter((def) => def.key !== 'network').map((def) => {
     const row = el('div', 'quick-row');
     row.append(el('span', '', def.label), segFor(def));
     return row;
@@ -221,7 +370,7 @@ async function checkFlags() {
 }
 
 function setRunEnabled(on: boolean) {
-  $$<HTMLButtonElement>('#run-main, #run-top').forEach((b) => { b.disabled = !on; });
+  $$<HTMLButtonElement>('#run-main').forEach((b) => { b.disabled = !on; });
 }
 
 async function startRun() {
@@ -237,20 +386,66 @@ function logLine(cls: string, text: string) {
   log.scrollTop = log.scrollHeight;
 }
 
+function runLabel(run: Run) {
+  const what = run.flags.action === 'onboard' ? 'create wallet' : run.flags.action === 'transfer' ? 'transfer' : `${run.flags.lane} swap`;
+  return `run #${run.id} · ${what} · ${run.flags.network === 'devnet' ? 'devnet' : 'local'} · ${run.flags.wallet === 'passkey' ? 'passkey wallet' : 'demo wallet'}`;
+}
+
 function setResult(run: Run) {
+  $('#run-meta').textContent = runLabel(run);
   $('[data-r="quote"]').textContent = run.quote && run.quote !== '0' ? tusd(run.quote) : '—';
   $('[data-r="received"]').textContent = run.received && run.received !== '0' ? tusd(run.received) : '—';
   $('[data-r="loss"]').textContent = run.lossPct === undefined ? '—' : `${run.lossPct.toFixed(3)}%`;
   $('[data-r="gas"]').textContent = run.gasUsed ? run.gasUsed.toLocaleString() : '—';
   const v = $('#verdict');
   v.hidden = false;
+  $('#verdict-empty').hidden = true;
   v.className = `verdict ${run.ok && (run.lossPct ?? 0) <= 0.01 ? 'good' : 'bad'}`;
   v.textContent = verdictText(run);
+  renderTxs(run);
+}
+
+const EXPLORER_NODE: Record<string, string> = { local: 'http://127.0.0.1:14347/rpc', devnet: 'https://altmempool.forshtat.com/rpc' };
+
+function txRow(label: string, hash: string, note: string, explorer: boolean, network: string) {
+  const row = el('div', 'tx-row');
+  const copy = el('button', 'quiet-button', 'Copy') as HTMLButtonElement;
+  copy.type = 'button';
+  copy.addEventListener('click', () => { void navigator.clipboard.writeText(hash).then(() => { copy.textContent = 'Copied'; }); });
+  const actions = el('span', 'tx-actions');
+  actions.append(copy);
+  if (explorer) {
+    const a = el('a', 'quiet-button', 'Open ↗') as HTMLAnchorElement;
+    a.href = `https://explorer.altmempool.wtf/tx/${hash}?node=${encodeURIComponent(EXPLORER_NODE[network] ?? EXPLORER_NODE.local)}`;
+    a.target = '_blank';
+    a.rel = 'noopener';
+    actions.append(a);
+  }
+  row.append(el('span', 'tx-label', label), el('code', 'tx-hash', short(hash)), actions, el('small', 'tx-note', note));
+  return row;
+}
+
+function renderTxs(run: Run | null) {
+  const list = $('#tx-list');
+  if (!run) {
+    list.replaceChildren(el('p', 'live-empty', 'No transactions yet.'));
+    return;
+  }
+  const net = String(run.flags.network);
+  const rows: HTMLElement[] = [];
+  if (run.txHash) {
+    const label = run.flags.action === 'onboard' ? 'Wallet created' : run.flags.lane === 'batch' ? 'Commit' : run.flags.action === 'transfer' ? 'Transfer' : 'Swap';
+    rows.push(txRow(label, run.txHash, 'Frame transaction through the alt mempool', true, net));
+  }
+  if (run.batch?.revealTx) rows.push(txRow('Reveal', run.batch.revealTx, 'Sent by a node keeper (normal transaction)', false, net));
+  if (run.batch?.ticket) rows.push(txRow('Sealed ticket', run.batch.ticket, 'Not a transaction: lives only in our sealed mempool', false, net));
+  list.replaceChildren(...(rows.length ? rows : [el('p', 'live-empty', 'No transactions in this run.')]));
 }
 
 function verdictText(run: Run) {
   if (!run.ok) return `Failed: ${run.error ?? 'unknown error'}`;
   const verify = run.frameGas?.[0] ? ` VERIFY frame used ${run.frameGas[0].toLocaleString()} gas.` : '';
+  if (run.flags.action === 'onboard') return `Wallet created in block ${run.block}, in one transaction. The sponsor paid the gas.`;
   if (run.flags.action === 'transfer') return `Mined in block ${run.block}.${verify}`;
   if (run.flags.lane === 'batch') {
     const blocked = run.batch?.frontRunsBlocked ? ` The bot saw the order only after it was revealed and tried to front-run ${run.batch.frontRunsBlocked}×: ${run.batch.blockedReason}.` : '';
@@ -271,18 +466,27 @@ function connectEvents() {
       setRunEnabled(false);
       $('#log').textContent = '';
       $('#verdict').hidden = true;
+      $('#verdict-empty').hidden = false;
+      $('#run-meta').textContent = '';
+      renderTxs(null);
+      showLive('log');
       $$('[data-r]').forEach((n) => { n.textContent = '…'; });
-      $('#run-state').textContent = `run #${e.runId} · ${e.flags.action} · ${e.flags.lane}`;
+      $('#run-state').textContent = e.mode === 'onboard' ? `run #${e.runId} · create wallet` : `run #${e.runId} · ${e.flags.action} · ${e.flags.lane}`;
       logLine('sys', `flags: ${schema.map((d) => `${d.key}=${optionLabel(d.key, e.flags[d.key])}`).join('  ')}`);
     } else if (e.type === 'line') {
+      if (e.line.trim().startsWith('{')) return;
       logLine(e.stream === 'alice' ? 'alice' : 'bot', `${e.stream === 'alice' ? 'ALICE ' : 'BOT   '} ${e.line}`);
     } else if (e.type === 'result') {
       running = false;
-      $('#run-state').textContent = `run #${e.run.id} · ${e.run.ok ? 'done' : 'failed'}`;
+      $('#run-state').textContent = e.run.ok ? 'done' : 'failed';
       setResult(e.run as Run);
+      showLive('result');
       void checkFlags();
       void loadRuns();
       void loadStatus();
+      void refreshPasskey();
+    } else if (e.type === 'sign') {
+      void answerSign(e).catch((err: Error) => logLine('sys', `passkey signing failed: ${err.message}`));
     } else if (e.type === 'error') {
       running = false;
       logLine('sys', `error: ${e.message}`);
@@ -310,14 +514,14 @@ async function loadStatus() {
   }
   const s = await res.json() as Status;
   $('#sync-status').replaceChildren(el('i'), document.createTextNode(` Synced ${new Date().toLocaleTimeString()}`));
-  $('[data-metric="block"]').textContent = s.localBlock.up ? Number(s.localBlock.value).toLocaleString() : 'down';
-  $('[data-metric="block-note"]').textContent = s.devnetBlock.up ? `devnet at ${Number(s.devnetBlock.value).toLocaleString()}` : 'devnet unreachable';
+  const block = (p: Probe) => (p.up ? ` · block ${Number(p.value).toLocaleString()}` : '');
   $('#service-lines').replaceChildren(
-    serviceLine('Local chain (ethrex)', s.localBlock),
-    serviceLine('Alt mempool (patched)', s.sidecar),
-    serviceLine('Sealed mempool (in sidecar)', s.node),
-    serviceLine('Devnet chain', s.devnetBlock),
-    serviceLine('Devnet alt mempool', s.devnetSidecar)
+    serviceLine('Local chain', s.localBlock, block(s.localBlock)),
+    serviceLine('Local alt mempool', s.sidecar),
+    serviceLine('Sealed mempool', s.node),
+    serviceLine('Devnet chain', s.devnetBlock, block(s.devnetBlock)),
+    serviceLine('Devnet alt mempool', s.devnetSidecar),
+    serviceLine('Devnet sealed mempool', s.devnetNode)
   );
   renderWallets(s.wallets, s.reputation);
 }
@@ -356,17 +560,14 @@ async function loadRuns() {
   const list = $('#run-list');
   list.replaceChildren(...(runs.length ? runs.slice(0, 8).map((r) => {
     const row = el('div', 'activity-row');
-    const what = `#${r.id} ${r.flags.action} · ${r.flags.lane} · ${r.flags.scheme}${r.flags.mevBot && r.flags.action === 'swap' ? ' · bot' : ''}`;
+    const what = r.flags.action === 'onboard' ? `#${r.id} create wallet · ${r.flags.network}` : `#${r.id} ${r.flags.action} · ${r.flags.lane} · ${r.flags.scheme}${r.flags.wallet === 'passkey' ? ' · passkey' : ''}`;
     const outcome = !r.ok ? `failed` : r.lossPct !== undefined ? `loss ${r.lossPct.toFixed(3)}%` : `block ${r.block}`;
     row.append(el('span', '', what), el('span', '', `${outcome} · ${ago(r.at)}`));
+    row.classList.add('pick');
+    row.title = 'Show this run';
+    row.addEventListener('click', () => { if (!running) { setResult(r); $('#log').textContent = ''; $('#run-state').textContent = r.ok ? 'done' : 'failed'; showLive('result'); } });
     return row;
   }) : [el('div', 'loading-row', 'No runs yet. Pick flags and press Run.')]));
-  const lastLoss = (lane: string) => runs.find((r) => r.flags.action === 'swap' && r.flags.lane === lane && r.ok && r.lossPct !== undefined);
-  (['public', 'sealed'] as const).forEach((lane) => {
-    const r = lastLoss(lane);
-    $(`[data-metric="loss-${lane}"]`).textContent = r ? `${r.lossPct!.toFixed(2)}%` : '—';
-    $(`[data-loss="${lane}"]`).className = `metric-card${r ? (r.lossPct! > 0.01 ? ' bad' : ' good') : ''}`;
-  });
   renderSealed();
 }
 
@@ -405,10 +606,10 @@ async function loadSealedInfo() {
 
 async function loadAdmissions() {
   const sealed = mempoolView === 'sealed';
-  const res = await fetch(sealed ? '/api/admissions?mempool=sealed' : `/api/admissions?network=${flags.network}`).catch(() => null);
+  const res = await fetch(sealed ? `/api/admissions?mempool=sealed&network=${flags.network}` : `/api/admissions?network=${flags.network}`).catch(() => null);
   const table = $('#admission-table');
   $('#admission-key').textContent = sealed ? 'Envelope' : 'Tx';
-  $('#checks-net').textContent = sealed ? 'LEANSEAL SEALED MEMPOOL · LOCAL' : `ALT MEMPOOL · ${String(flags.network).toUpperCase()}`;
+  $('#checks-net').textContent = sealed ? `LEANSEAL SEALED MEMPOOL · ${String(flags.network).toUpperCase()}` : `ALT MEMPOOL · ${String(flags.network).toUpperCase()}`;
   $('#mempool-id').textContent = sealed && sealedInfo
     ? `mempool id ${sealedInfo.mempoolId} · ${sealedInfo.rules.length} SEAL rules · ${sealedInfo.pending} pending`
     : 'the standard ERC-8421 rule set: global checks, then per entity for each validation frame';
@@ -417,10 +618,6 @@ async function loadAdmissions() {
     return;
   }
   const items = await res.json() as Admission[];
-  if (!sealed) {
-    const included = items.filter((a) => a.outcome === 'included').length;
-    $('[data-metric="admissions"]').textContent = `${included} / ${items.length - included}`;
-  }
   const select = (a: Admission, tr?: HTMLElement) => {
     selectedTx = keyOf(a);
     $$('#admission-table tr').forEach((row) => row.classList.remove('on'));
@@ -486,7 +683,18 @@ async function init() {
   }));
   $$('[data-refresh]').forEach((b) => b.addEventListener('click', () => { void loadStatus(); void loadRuns(); void loadAdmissions(); }));
   $('#dashboard-alert button').addEventListener('click', () => { $('#dashboard-alert').hidden = true; });
-  $$<HTMLButtonElement>('#run-main, #run-top').forEach((b) => b.addEventListener('click', () => { void startRun(); }));
+  $$<HTMLButtonElement>('#run-main').forEach((b) => b.addEventListener('click', () => { void startRun(); }));
+  $$<HTMLButtonElement>('#live-tabs button').forEach((b) => b.addEventListener('click', () => showLive(b.dataset.live!)));
+  const dialog = $<HTMLDialogElement>('#advanced-dialog');
+  $('#advanced-open').addEventListener('click', () => dialog.showModal());
+  $$('#advanced-close, #advanced-done').forEach((b) => b.addEventListener('click', () => dialog.close()));
+  $('#advanced-reset').addEventListener('click', () => setFlags({ ...defaults, network: flags.network }));
+  dialog.addEventListener('click', (ev) => { if (ev.target === dialog) dialog.close(); });
+  $<HTMLSelectElement>('#scenario').addEventListener('change', (ev) => {
+    const p = presets.find((x) => x.id === (ev.target as HTMLSelectElement).value);
+    if (p) setFlags({ ...p.flags, network: flags.network });
+  });
+  $$<HTMLButtonElement>('#net-switch button').forEach((b) => b.addEventListener('click', () => setFlags({ ...flags, network: b.dataset.net! })));
   $('#reset-flags').addEventListener('click', () => setFlags({ ...defaults }));
   $$<HTMLButtonElement>('#mempool-switch button').forEach((b) => b.addEventListener('click', () => {
     mempoolView = b.dataset.mempool === 'sealed' ? 'sealed' : 'standard';
@@ -509,7 +717,8 @@ async function init() {
   renderFacts();
   connectEvents();
   await loadSealedInfo();
-  await Promise.all([loadStatus(), loadRuns(), loadAdmissions()]);
+  await Promise.all([loadStatus(), loadRuns(), loadAdmissions(), refreshPasskey()]);
+  showLatestRun();
   setInterval(() => { void loadStatus(); }, 10_000);
   setInterval(() => { if (!$<HTMLElement>('[data-panel="checks"]').hidden) void loadAdmissions(); }, 15_000);
 }
