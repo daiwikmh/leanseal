@@ -1,0 +1,2 @@
+Vendored from https://github.com/nconsigny/SPHINCs- at 4c76aaf113d326df9adede63d015f3b394ab84f4
+(signers/leansphincs-s-keccak, Python helpers omitted). Build: cargo build --release && cp target/release/lssk lssk
