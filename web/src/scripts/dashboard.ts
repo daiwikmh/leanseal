@@ -8,6 +8,7 @@ type OptionState = Record<string, Array<{ value: FlagValue; ok: boolean; reason:
 
 type Run = {
   id: number;
+  order?: { side: 'buy' | 'sell'; amountWei: string };
   at: number;
   flags: Flags;
   verifyGasLimit: number;
@@ -25,13 +26,13 @@ type Run = {
   botProfit?: string;
   envelope?: { id: string; status?: string; openedBy?: string; round?: number; note?: string };
   sealedChecks?: Check[];
-  batch?: { round?: string; ticket?: string; ticketStatus?: string; note?: string; revealTx?: string; frontRunsBlocked?: number; blockedReason?: string };
+  batch?: { round?: string; ticket?: string; ticketStatus?: string; note?: string; revealTx?: string; frontRunsBlocked?: number; blockedReason?: string; refunded?: boolean };
   admissionOutcome?: string;
 };
 
 type Probe = { up: boolean; ms: number; value?: unknown; error?: string };
 type Wallet = { network: string; scheme: string; deployed: boolean; account?: string; ethWei?: string | null; tusdWei?: string | null; stakeWei?: string; staked?: boolean };
-type Status = { localBlock: Probe; devnetBlock: Probe; sidecar: Probe; devnetSidecar: Probe; node: Probe; devnetNode: Probe; reputation: Probe; wallets: Wallet[]; running: Flags | null };
+type Status = { public?: boolean; localBlock?: Probe; devnetBlock: Probe; sidecar?: Probe; devnetSidecar: Probe; node?: Probe; devnetNode: Probe; reputation?: Probe; wallets: Wallet[] };
 type Check = { rule: string; verdict: string; detail?: string; entity?: string; frameIndex?: number; name?: string };
 type Admission = { id: number; txHash?: string; envelopeId?: string; sender?: string; at: number; outcome: string; checks: Check[] };
 type RuleText = { id: string; name: string; text: string };
@@ -39,6 +40,57 @@ type SealedInfo = { mempoolId: string; rules: RuleText[]; revealRules?: RuleText
 type TxEvent = { kind: string; status: string; at: number };
 
 const STORAGE_KEY = 'leanseal.flags';
+const SESSION_KEY = 'leanseal.session';
+
+function sessionId(): string {
+  try {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (saved) return saved;
+    const fresh = crypto.randomUUID();
+    localStorage.setItem(SESSION_KEY, fresh);
+    return fresh;
+  } catch {
+    return crypto.randomUUID();
+  }
+}
+
+const SESSION = sessionId();
+const nativeFetch = window.fetch.bind(window);
+window.fetch = (input: RequestInfo | URL, init: RequestInit = {}) => {
+  const url = typeof input === 'string' ? input : input instanceof URL ? input.href : input.url;
+  if (url.startsWith('/api')) {
+    const headers = new Headers(init.headers);
+    headers.set('x-leanseal-session', SESSION);
+    return nativeFetch(input, { ...init, headers });
+  }
+  return nativeFetch(input, init);
+};
+let isPublic = false;
+type Mode = 'individual' | 'institution';
+const MODE_KEY = 'leanseal.mode';
+
+function storedMode(): Mode | null {
+  try {
+    const m = localStorage.getItem(MODE_KEY);
+    return m === 'individual' || m === 'institution' ? m : null;
+  } catch {
+    return null;
+  }
+}
+
+let mode: Mode = storedMode() ?? 'individual';
+
+const INSTITUTION_PRESETS: Record<string, { title: string; text: string }> = {
+  protected: { title: 'Sealed block trade', text: 'Your order travels as a sealed hash through our ERC-8421 mempool. Every order in the batch fills at one price, so no one can trade ahead of you.' },
+  passkey: { title: 'Sealed block trade, desk operator wallet', text: 'The same sealed block trade, signed by the desk operator. The quantum-safe key is made in this browser from a passkey and never leaves it.' },
+  attack: { title: 'Same order on the public mempool', text: 'The order in plain sight. A bot trades around it and takes up to your slippage.' },
+};
+
+const INSTITUTION_ONLY = 'passkey';
+const visiblePresets = () => (mode === 'institution' ? presets.filter((p) => p.id === INSTITUTION_ONLY) : presets);
+
+const presetTitle = (p: Preset) => (mode === 'institution' ? INSTITUTION_PRESETS[p.id]?.title : undefined) ?? p.title;
+const presetText = (p: Preset) => (mode === 'institution' ? INSTITUTION_PRESETS[p.id]?.text : undefined) ?? p.text;
 const $ = <T extends HTMLElement>(sel: string) => document.querySelector<T>(sel)!;
 const $$ = <T extends HTMLElement>(sel: string) => [...document.querySelectorAll<T>(sel)];
 
@@ -198,7 +250,7 @@ function sameFlags(a: Flags, b: Flags) {
   return schema.every((d) => a[d.key] === b[d.key]);
 }
 
-const presetFor = (f: Flags) => presets.find((p) => sameFlags({ ...p.flags, network: f.network }, f));
+const presetFor = (f: Flags) => visiblePresets().find((p) => sameFlags({ ...p.flags, network: f.network }, f));
 
 function renderPresets() {
   const select = $<HTMLSelectElement>('#scenario');
@@ -209,12 +261,15 @@ function renderPresets() {
     g.append(...list.map((p) => {
       const o = document.createElement('option');
       o.value = p.id;
-      o.textContent = p.title;
+      o.textContent = presetTitle(p);
       return o;
     }));
     return g;
   };
-  const options: HTMLElement[] = [group('LeanSeal', presets.filter((p) => p.group === 'core')), group('Extras', presets.filter((p) => p.group !== 'core'))];
+  const shown = visiblePresets();
+  const core = shown.filter((p) => p.group === 'core');
+  const extras = shown.filter((p) => p.group !== 'core');
+  const options: HTMLElement[] = [...(core.length ? [group('LeanSeal', core)] : []), ...(extras.length ? [group('Extras', extras)] : [])];
   if (!current) {
     const o = document.createElement('option');
     o.value = '';
@@ -229,10 +284,10 @@ const LANE_TEXT: Record<string, string> = { public: 'Public mempool', sealed: 'E
 
 function renderSummary() {
   const current = presetFor(flags);
-  $('#scenario-text').textContent = current?.text ?? 'Your own mix of settings.';
+  $('#scenario-text').textContent = current ? presetText(current) : 'Your own mix of settings.';
   const facts: Array<[string, string]> = [
     ['Route', flags.action === 'swap' ? LANE_TEXT[String(flags.lane)] ?? String(flags.lane) : 'Send 1 gwei'],
-    ['Wallet', `${flags.wallet === 'passkey' ? 'Your passkey' : 'Demo'} · ${flags.scheme === 'lss' ? 'leanSphincs-s' : 'SHA2'}`],
+    ['Wallet', `${flags.wallet === 'passkey' ? (mode === 'institution' ? 'Desk operator (passkey)' : 'Your passkey') : 'Demo'} · ${flags.scheme === 'lss' ? 'leanSphincs-s' : 'SHA2'}`],
     ['Gas', flags.gas === 'sponsor' ? 'Free (sponsor pays)' : 'Wallet pays'],
   ];
   $('#scenario-facts').replaceChildren(...facts.flatMap(([k, v]) => [el('dt', '', k), el('dd', '', v)]));
@@ -295,6 +350,7 @@ async function unlock(create: boolean) {
   if (!res.ok) throw new Error(((await res.json()) as { error: string }).error);
   passkeyStatus = await res.json() as PasskeyStatus;
   void checkFlags();
+  if (mode === 'institution') void loadVault();
 }
 
 async function lock() {
@@ -387,21 +443,22 @@ function logLine(cls: string, text: string) {
 }
 
 function runLabel(run: Run) {
-  const what = run.flags.action === 'onboard' ? 'create wallet' : run.flags.action === 'transfer' ? 'transfer' : `${run.flags.lane} swap`;
+  const what = run.order ? `${run.order.side} order` : run.flags.action === 'onboard' ? 'create wallet' : run.flags.action === 'withdraw' ? 'withdraw' : run.flags.action === 'faucet' ? 'test funds' : run.flags.action === 'transfer' ? 'transfer' : `${run.flags.lane} swap`;
   return `run #${run.id} · ${what} · ${run.flags.network === 'devnet' ? 'devnet' : 'local'} · ${run.flags.wallet === 'passkey' ? 'passkey wallet' : 'demo wallet'}`;
 }
 
 function setResult(run: Run) {
   $('#run-meta').textContent = runLabel(run);
-  $('[data-r="quote"]').textContent = run.quote && run.quote !== '0' ? tusd(run.quote) : '—';
-  $('[data-r="received"]').textContent = run.received && run.received !== '0' ? tusd(run.received) : '—';
+  const out = run.order?.side === 'sell' ? (w: string) => eth(w) : (w: string) => tusd(w);
+  $('[data-r="quote"]').textContent = run.quote && run.quote !== '0' ? out(run.quote) : '—';
+  $('[data-r="received"]').textContent = run.received && run.received !== '0' ? out(run.received) : '—';
   $('[data-r="loss"]').textContent = run.lossPct === undefined ? '—' : `${run.lossPct.toFixed(3)}%`;
   $('[data-r="gas"]').textContent = run.gasUsed ? run.gasUsed.toLocaleString() : '—';
   const v = $('#verdict');
   v.hidden = false;
   $('#verdict-empty').hidden = true;
   v.className = `verdict ${run.ok && (run.lossPct ?? 0) <= 0.01 ? 'good' : 'bad'}`;
-  v.textContent = verdictText(run);
+  v.textContent = verdictText(run) + sizeNote(run);
   renderTxs(run);
 }
 
@@ -442,11 +499,143 @@ function renderTxs(run: Run | null) {
   list.replaceChildren(...(rows.length ? rows : [el('p', 'live-empty', 'No transactions in this run.')]));
 }
 
+function sizeNote(run: Run) {
+  if (mode !== 'institution' || run.flags.action !== 'swap' || !run.ok || run.lossPct === undefined) return '';
+  const loss = Math.max(run.lossPct, 0);
+  const dollars = Math.round((5_000_000 * loss) / 100).toLocaleString();
+  return ` Illustrative at size (not measured): the same ${loss.toFixed(2)}% on a $5M order is $${dollars}; a 3% sandwich would be $150,000.`;
+}
+
+type Vault = { ready: boolean; account?: string; walletEth?: string; walletTusd?: string; vaultEth?: string; vaultTusd?: string; sqrtPriceX96?: string; liquidity?: string; faucetReadyAt?: number };
+let vault: Vault = { ready: false };
+let orderSide: 'buy' | 'sell' = 'buy';
+let orderBps = 300;
+const Q96 = 2n ** 96n;
+const BOND = 10n ** 9n;
+
+function toWei(text: string): bigint | null {
+  const m = text.trim().match(/^(\d*)(?:\.(\d{0,18}))?$/);
+  if (!m || (!m[1] && !m[2])) return null;
+  return BigInt(m[1] || '0') * 10n ** 18n + BigInt((m[2] ?? '').padEnd(18, '0') || '0');
+}
+
+const fromWei = (wei: bigint) => (Number(wei) / 1e18).toFixed(6).replace(/\.?0+$/, '');
+
+function quote(side: 'buy' | 'sell', amount: bigint): bigint | null {
+  if (!vault.sqrtPriceX96 || !vault.liquidity) return null;
+  const sp = BigInt(vault.sqrtPriceX96);
+  const l = BigInt(vault.liquidity);
+  const x = (l * Q96) / sp;
+  const y = (l * sp) / Q96;
+  const d = (amount * 997_000n) / 1_000_000n;
+  return side === 'buy' ? (y * d) / (x + d) : (x * d) / (y + d);
+}
+
+function maxAmount(): bigint {
+  if (!vault.ready) return 0n;
+  if (orderSide === 'buy') {
+    const total = BigInt(vault.vaultEth!) + BigInt(vault.walletEth!) - BOND;
+    return total > 0n ? total : 0n;
+  }
+  return BigInt(vault.vaultTusd!) + BigInt(vault.walletTusd!);
+}
+
+function renderOrder() {
+  $$<HTMLButtonElement>('#order-side button').forEach((b) => b.classList.toggle('on', b.dataset.side === orderSide));
+  $$<HTMLButtonElement>('#order-slip button').forEach((b) => b.classList.toggle('on', Number(b.dataset.bps) === orderBps));
+  $('#order-unit').textContent = orderSide === 'buy' ? 'ETH' : 'tUSD';
+  const submit = $<HTMLButtonElement>('#order-submit');
+  const est = $('#order-estimate');
+  if (!vault.ready) {
+    $('#vault-balances').replaceChildren(el('dt', '', 'Wallet'), el('dd', '', '—'), el('dt', '', 'Pool vault'), el('dd', '', '—'));
+    est.textContent = 'Unlock your passkey and create your wallet (sidebar) to trade.';
+    submit.disabled = true;
+    $$<HTMLButtonElement>('#faucet-btn, #withdraw-btn').forEach((b) => { b.disabled = true; });
+    return;
+  }
+  $('#vault-balances').replaceChildren(
+    el('dt', '', 'Wallet'), el('dd', '', `${fromWei(BigInt(vault.walletEth!))} ETH · ${fromWei(BigInt(vault.walletTusd!))} tUSD`),
+    el('dt', '', 'Pool vault'), el('dd', '', `${fromWei(BigInt(vault.vaultEth!))} ETH · ${fromWei(BigInt(vault.vaultTusd!))} tUSD`)
+  );
+  const faucetWait = vault.faucetReadyAt ? vault.faucetReadyAt - Date.now() : 0;
+  const faucet = $<HTMLButtonElement>('#faucet-btn');
+  faucet.disabled = running || faucetWait > 0;
+  faucet.textContent = faucetWait > 0 ? `Test funds in ${Math.ceil(faucetWait / 60000)} min` : 'Get test funds';
+  $<HTMLButtonElement>('#withdraw-btn').disabled = running || (BigInt(vault.vaultEth!) === 0n && BigInt(vault.vaultTusd!) === 0n);
+  const amount = toWei($<HTMLInputElement>('#order-amount').value);
+  const max = maxAmount();
+  if (amount === null || amount === 0n) {
+    est.textContent = 'Enter an amount.';
+    submit.disabled = true;
+    return;
+  }
+  if (amount > max) {
+    est.textContent = `More than you hold (max ${fromWei(max)} ${orderSide === 'buy' ? 'ETH' : 'tUSD'}). Use "Get test funds".`;
+    submit.disabled = true;
+    return;
+  }
+  const q = quote(orderSide, amount);
+  const unitOut = orderSide === 'buy' ? 'tUSD' : 'ETH';
+  est.textContent = q === null ? '' : `Estimated fill ≈ ${fromWei(q)} ${unitOut} at the current pool price. You get at least ${fromWei((q * BigInt(10_000 - orderBps)) / 10_000n)} ${unitOut}, or a full refund.`;
+  submit.disabled = running;
+}
+
+async function loadVault() {
+  const res = await fetch('/api/vault?network=devnet').catch(() => null);
+  vault = res?.ok ? await res.json() as Vault : { ready: false };
+  renderOrder();
+}
+
+async function postAction(path: string, body?: unknown) {
+  const res = await fetch(path, { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body ?? {}) });
+  if (res.status !== 202) showMessage(((await res.json().catch(() => ({ error: `HTTP ${res.status}` }))) as { error: string }).error);
+}
+
+function submitOrder() {
+  const amount = toWei($<HTMLInputElement>('#order-amount').value);
+  const base = presets.find((p) => p.id === INSTITUTION_ONLY)?.flags ?? flags;
+  if (amount === null) return;
+  void postAction('/api/run', { ...base, network: 'devnet', mevBot: false, slippageBps: orderBps, order: { side: orderSide, amountWei: amount.toString() } });
+}
+
+function applyMode(next: Mode) {
+  mode = next;
+  try {
+    localStorage.setItem(MODE_KEY, next);
+  } catch {
+    mode = next;
+  }
+  $<HTMLSelectElement>('#view-select').value = next;
+  const inst = next === 'institution';
+  $('#order-ticket').hidden = !inst;
+  $('#scenario-block').hidden = inst;
+  $('#net-switch').closest<HTMLElement>('.side-block')!.hidden = inst || isPublic;
+  if (inst) void loadVault();
+  $('#wallet-eyebrow').textContent = next === 'institution' ? 'DESK OPERATOR WALLET' : 'YOUR WALLET';
+  pages.overview.meta = next === 'institution' ? 'Sealed block trades on Uniswap v4' : 'Pick a scenario and run it';
+  if ($$('[data-tab="overview"].active').length) $('#page-meta').textContent = pages.overview.meta;
+  const only = inst ? presets.find((p) => p.id === INSTITUTION_ONLY) : undefined;
+  if (only && (!presetFor(flags) || flags.network !== 'devnet')) {
+    setFlags({ ...only.flags, network: 'devnet' });
+    return;
+  }
+  renderPresets();
+  renderSummary();
+}
+
 function verdictText(run: Run) {
   if (!run.ok) return `Failed: ${run.error ?? 'unknown error'}`;
   const verify = run.frameGas?.[0] ? ` VERIFY frame used ${run.frameGas[0].toLocaleString()} gas.` : '';
   if (run.flags.action === 'onboard') return `Wallet created in block ${run.block}, in one transaction. The sponsor paid the gas.`;
+  if (run.flags.action === 'faucet') return 'Test ETH and tUSD sent to your wallet.';
+  if (run.flags.action === 'withdraw') return 'Your vault balance was sent back to your wallet. The sponsor paid the gas.';
+  if (run.order && run.ok && !run.batch?.refunded) {
+    const amount = run.order.side === 'sell' ? tusd(run.order.amountWei) : eth(run.order.amountWei);
+    const got = run.received && run.received !== '0' ? (run.order.side === 'sell' ? eth(run.received) : tusd(run.received)) : '—';
+    return `${run.order.side === 'sell' ? 'Sold' : 'Bought with'} ${amount} → ${got} in batch ${run.batch?.round ?? '?'}, at the batch's one price (${run.lossPct?.toFixed(3) ?? '0'}% from the quote). Proceeds are in your pool vault.`;
+  }
   if (run.flags.action === 'transfer') return `Mined in block ${run.block}.${verify}`;
+  if (run.flags.lane === 'batch' && run.batch?.refunded) return `Refunded: by the time batch ${run.batch.round ?? '?'} settled, the price had moved past your ${Number(run.flags.slippageBps) / 100}% limit, so the pool gave your money back instead of filling at a worse price. Nothing was lost.`;
   if (run.flags.lane === 'batch') {
     const blocked = run.batch?.frontRunsBlocked ? ` The bot saw the order only after it was revealed and tried to front-run ${run.batch.frontRunsBlocked}×: ${run.batch.blockedReason}.` : '';
     return `Batch ${run.batch?.round ?? '?'} settled at one price: loss ${run.lossPct?.toFixed(3) ?? '0'}%. Reveal ${run.batch?.ticketStatus ?? '?'}${run.batch?.note ? ` (${run.batch.note})` : ''}.${blocked}`;
@@ -458,7 +647,7 @@ function verdictText(run: Run) {
 }
 
 function connectEvents() {
-  const es = new EventSource('/events');
+  const es = new EventSource(`/events?session=${encodeURIComponent(SESSION)}`);
   es.onmessage = (m) => {
     const e = JSON.parse(m.data);
     if (e.type === 'start') {
@@ -478,6 +667,7 @@ function connectEvents() {
       logLine(e.stream === 'alice' ? 'alice' : 'bot', `${e.stream === 'alice' ? 'ALICE ' : 'BOT   '} ${e.line}`);
     } else if (e.type === 'result') {
       running = false;
+      if (mode === 'institution') void loadVault();
       $('#run-state').textContent = e.run.ok ? 'done' : 'failed';
       setResult(e.run as Run);
       showLive('result');
@@ -515,15 +705,16 @@ async function loadStatus() {
   const s = await res.json() as Status;
   $('#sync-status').replaceChildren(el('i'), document.createTextNode(` Synced ${new Date().toLocaleTimeString()}`));
   const block = (p: Probe) => (p.up ? ` · block ${Number(p.value).toLocaleString()}` : '');
+  const local = s.localBlock && s.sidecar && s.node
+    ? [serviceLine('Local chain', s.localBlock, block(s.localBlock)), serviceLine('Local alt mempool', s.sidecar), serviceLine('Sealed mempool', s.node)]
+    : [];
   $('#service-lines').replaceChildren(
-    serviceLine('Local chain', s.localBlock, block(s.localBlock)),
-    serviceLine('Local alt mempool', s.sidecar),
-    serviceLine('Sealed mempool', s.node),
+    ...local,
     serviceLine('Devnet chain', s.devnetBlock, block(s.devnetBlock)),
     serviceLine('Devnet alt mempool', s.devnetSidecar),
     serviceLine('Devnet sealed mempool', s.devnetNode)
   );
-  renderWallets(s.wallets, s.reputation);
+  renderWallets(s.wallets, s.reputation ?? { up: false, ms: 0 });
 }
 
 function renderWallets(wallets: Wallet[], reputation: Probe) {
@@ -685,6 +876,18 @@ async function init() {
   $('#dashboard-alert button').addEventListener('click', () => { $('#dashboard-alert').hidden = true; });
   $$<HTMLButtonElement>('#run-main').forEach((b) => b.addEventListener('click', () => { void startRun(); }));
   $$<HTMLButtonElement>('#live-tabs button').forEach((b) => b.addEventListener('click', () => showLive(b.dataset.live!)));
+  $<HTMLSelectElement>('#view-select').addEventListener('change', (ev) => applyMode((ev.target as HTMLSelectElement).value as Mode));
+  $$<HTMLButtonElement>('#order-side button').forEach((b) => b.addEventListener('click', () => {
+    orderSide = b.dataset.side as 'buy' | 'sell';
+    $<HTMLInputElement>('#order-amount').value = orderSide === 'buy' ? '0.0005' : '0.01';
+    renderOrder();
+  }));
+  $$<HTMLButtonElement>('#order-slip button').forEach((b) => b.addEventListener('click', () => { orderBps = Number(b.dataset.bps); renderOrder(); }));
+  $<HTMLInputElement>('#order-amount').addEventListener('input', () => renderOrder());
+  $('#order-max').addEventListener('click', () => { $<HTMLInputElement>('#order-amount').value = fromWei(maxAmount()); renderOrder(); });
+  $('#order-submit').addEventListener('click', () => submitOrder());
+  $('#faucet-btn').addEventListener('click', () => { void postAction('/api/faucet?network=devnet'); });
+  $('#withdraw-btn').addEventListener('click', () => { void postAction('/api/withdraw?network=devnet'); });
   const dialog = $<HTMLDialogElement>('#advanced-dialog');
   $('#advanced-open').addEventListener('click', () => dialog.showModal());
   $$('#advanced-close, #advanced-done').forEach((b) => b.addEventListener('click', () => dialog.close()));
@@ -707,19 +910,22 @@ async function init() {
     showMessage('Cannot reach the LeanSeal API. Start it with: cd demo && npx --prefix ../workshop tsx server.ts');
     return;
   }
-  const body = await res.json() as { defaults: Flags; schema: FlagDef[]; presets: Preset[] };
+  const body = await res.json() as { public?: boolean; defaults: Flags; schema: FlagDef[]; presets: Preset[] };
+  isPublic = !!body.public;
   schema = body.schema;
   presets = body.presets;
   defaults = body.defaults;
-  const stored = readStoredFlags();
+  const stored = isPublic ? {} : readStoredFlags();
   flags = Object.fromEntries(schema.map((d) => [d.key, d.options.includes(stored[d.key]) ? stored[d.key] : defaults[d.key]]));
+  if (isPublic) $('#net-switch').closest<HTMLElement>('.side-block')!.hidden = true;
   renderControls();
   renderFacts();
   connectEvents();
   await loadSealedInfo();
   await Promise.all([loadStatus(), loadRuns(), loadAdmissions(), refreshPasskey()]);
+  applyMode(mode);
   showLatestRun();
-  setInterval(() => { void loadStatus(); }, 10_000);
+  setInterval(() => { void loadStatus(); if (mode === 'institution' && !running) void loadVault(); }, 10_000);
   setInterval(() => { if (!$<HTMLElement>('[data-panel="checks"]').hidden) void loadAdmissions(); }, 15_000);
 }
 

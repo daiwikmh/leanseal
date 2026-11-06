@@ -1,6 +1,19 @@
 <section class="tab-panel active" data-panel="overview" aria-label="Run">
           <section class="trade-grid" aria-label="Run">
             <article class="surface run-surface">
+              <div class="order-ticket" id="order-ticket" hidden>
+                <span class="eyebrow">NEW SEALED ORDER · LIVE DEVNET</span>
+                <div class="order-row"><span>Side</span><div class="seg" id="order-side"><button type="button" class="on" data-side="buy">Buy tUSD</button><button type="button" data-side="sell">Sell tUSD</button></div></div>
+                <div class="order-row"><span>Amount</span><div class="order-amount"><input id="order-amount" type="number" inputmode="decimal" min="0" step="any" value="0.0005" /><em id="order-unit">ETH</em><button type="button" class="quiet-button" id="order-max">Max</button></div></div>
+                <div class="order-row"><span>Limit</span><div class="seg" id="order-slip"><button type="button" data-bps="50">0.5%</button><button type="button" data-bps="100">1%</button><button type="button" class="on" data-bps="300">3%</button></div></div>
+                <p class="order-estimate" id="order-estimate">Unlock your passkey and create your wallet to trade.</p>
+                <div class="vault-box">
+                  <dl id="vault-balances"><dt>Wallet</dt><dd>—</dd><dt>Pool vault</dt><dd>—</dd></dl>
+                  <div class="vault-actions"><button type="button" class="quiet-button outline" id="faucet-btn">Get test funds</button><button type="button" class="quiet-button outline" id="withdraw-btn">Withdraw vault</button></div>
+                </div>
+                <button type="button" class="primary-button run-button" id="order-submit">Submit sealed order <span aria-hidden="true">↗</span></button>
+              </div>
+              <div class="scenario-block" id="scenario-block">
               <label class="eyebrow" for="scenario">WHAT DO YOU WANT TO SEE?</label>
               <select id="scenario" class="scenario-select"></select>
               <p class="scenario-text" id="scenario-text"></p>
@@ -14,6 +27,7 @@
                 <div class="dialog-foot"><button type="button" class="quiet-button outline" id="advanced-reset">Reset</button><button type="button" class="primary-button" id="advanced-done">Done</button></div>
               </dialog>
               <button id="run-main" class="primary-button run-button">Run <span aria-hidden="true">↗</span></button>
+              </div>
             </article>
             <article class="surface chart-surface">
               <div class="live-head"><span class="eyebrow">WHAT HAPPENS</span><span class="run-meta" id="run-meta"></span><span class="queue-count" id="run-state">idle</span></div>
