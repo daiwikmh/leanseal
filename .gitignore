@@ -46,3 +46,6 @@ sidecar/data/
 # logs
 *.log
 localnet/data/
+
+# Foundry dependencies (reinstall with: cd contracts && forge install foundry-rs/forge-std --no-git)
+contracts/lib/
