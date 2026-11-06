@@ -1,0 +1,13 @@
+diff --git a/workshop.config.json5 b/workshop.config.json5
+index b57e07f..f673036 100644
+--- a/workshop.config.json5
++++ b/workshop.config.json5
+@@ -7,7 +7,7 @@
+   // The gateway sidecar node (/rpc). Everything goes through it: frame transactions into the
+   // standard alt-mempool, raw transactions on to the canonical mempool, the faucet, the explorer
+   // methods, and the standard eth_* reads. The gateway validates, then gossips to the miner.
+-  gatewayUrl: "https://altmempoolgateway.forshtat.com/rpc",
++  gatewayUrl: "https://altmempool.forshtat.com/rpc",
+   // The web explorer, only used to print links.
+   explorerUrl: "https://explorer.altmempool.wtf/",
+   // NaiveStakingRegistry: every stake is keyed on msg.sender.
