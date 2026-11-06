@@ -1,0 +1,13 @@
+<section class="tab-panel" data-panel="sealed" aria-label="Sealed lane" hidden>
+          <div class="workflow-grid">
+            <article class="surface workflow-card"><span class="workflow-number">01</span><span class="eyebrow">SIGN</span><h3>PQ signature</h3><strong data-s="sign">—</strong><p>Alice signs the frame transaction with her post-quantum key. The signed tx never leaves her machine in the clear.</p></article>
+            <article class="surface workflow-card"><span class="workflow-number">02</span><span class="eyebrow">SEAL</span><h3>Two locks</h3><strong data-s="round">—</strong><p>Lock A: ML-KEM-768 to the chosen builder. Lock B: a drand time lock that opens for everyone at the deadline round.</p></article>
+            <article class="surface workflow-card"><span class="workflow-number">03</span><span class="eyebrow">DOOR CHECKS</span><h3>Sealed mempool</h3><strong data-s="door">—</strong><p>The alt mempool checks what it can without opening the box: the SEAL rules, from shape and builders to stake, nonce, balance and rate limits.</p></article>
+            <article class="surface workflow-card violet-surface"><span class="workflow-number">04</span><span class="eyebrow">EXECUTION</span><h3>Opened &amp; included</h3><strong data-s="opened">—</strong><p>The builder opens it and relays it privately; if it doesn't, the drand lock opens it at the deadline.</p></article>
+          </div>
+          <div class="workflow-note"><span>SEALED MEMPOOL</span><code id="sealed-mempool-id">loading…</code><span>inside the ERC-8421 sidecar</span><span id="sealed-last">no sealed run yet</span></div>
+          <div class="checks-grid" style="margin-top:18px">
+            <article class="surface checks-surface"><span class="eyebrow">SEAL RULES · LAST SEALED RUN</span><h3>Door checks</h3><div class="check-list door-list" id="door-list"></div></article>
+            <article class="surface checks-surface"><span class="eyebrow">HISTORY</span><h3>Sealed envelopes</h3><div class="intent-table-wrap"><table><thead><tr><th>Envelope</th><th>Status</th><th>Opened by</th><th>Loss</th></tr></thead><tbody id="envelope-table"><tr><td colspan="4" class="loading-row">No sealed runs yet.</td></tr></tbody></table></div></article>
+          </div>
+        </section>

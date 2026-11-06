@@ -1,0 +1,40 @@
+---
+import '../styles/dashboard.css';
+import Sidebar from '../components/dashboard/Sidebar.astro';
+import DashboardHeader from '../components/dashboard/DashboardHeader.astro';
+import DashboardAlert from '../components/dashboard/DashboardAlert.astro';
+import OverviewPanel from '../components/dashboard/OverviewPanel.astro';
+import FlagsPanel from '../components/dashboard/FlagsPanel.astro';
+import ChecksPanel from '../components/dashboard/ChecksPanel.astro';
+import SealedPanel from '../components/dashboard/SealedPanel.astro';
+import WalletsPanel from '../components/dashboard/WalletsPanel.astro';
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="LeanSeal console: quantum-safe wallets and sealed, MEV-safe swaps on the EIP-8141 alt mempool." />
+    <link rel="preload" href="/fonts/dm-sans.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="icon" type="image/svg+xml" href="/logo.svg" />
+    <title>LeanSeal Console</title>
+  </head>
+  <body>
+    <a class="dash-skip" href="#dashboard-content">Skip to dashboard</a>
+    <div class="dashboard-shell">
+      <Sidebar />
+      <main class="dashboard-main" id="dashboard-content">
+        <DashboardHeader />
+        <DashboardAlert />
+        <div class="tab-panels">
+          <OverviewPanel />
+          <FlagsPanel />
+          <ChecksPanel />
+          <SealedPanel />
+          <WalletsPanel />
+        </div>
+      </main>
+    </div>
+    <script>import '../scripts/dashboard';</script>
+  </body>
+</html>

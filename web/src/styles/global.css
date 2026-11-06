@@ -1,0 +1,27 @@
+@layer theme, base, components, utilities;
+@import "tailwindcss/theme.css" layer(theme);
+@import "tailwindcss/utilities.css" layer(utilities);
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted-background);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--ui-border);
+  --color-ring: var(--ring);
+  --radius-lg: var(--radius);
+}
+
+:root {
+  --background: #edece8;
+  --foreground: #26251e;
+  --primary: #26251e;
+  --primary-foreground: #edece8;
+  --muted-background: #e4e3dc;
+  --muted-foreground: #77766f;
+  --ui-border: #d5d4cd;
+  --ring: #8c89e7;
+  --radius: 0.5rem;
+}

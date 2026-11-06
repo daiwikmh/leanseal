@@ -1,0 +1,35 @@
+<section class="tab-panel active" data-panel="overview" aria-label="Overview">
+          <div class="metric-grid">
+            <article class="metric-card"><span class="eyebrow">LOCAL BLOCK</span><strong data-metric="block">—</strong><span data-metric="block-note">our EIP-8141 chain</span></article>
+            <article class="metric-card" data-loss="public"><span class="eyebrow">PUBLIC SWAP LOSS</span><strong data-metric="loss-public">—</strong><span>last public-lane swap</span></article>
+            <article class="metric-card" data-loss="sealed"><span class="eyebrow">SEALED SWAP LOSS</span><strong data-metric="loss-sealed">—</strong><span>last sealed-lane swap</span></article>
+            <article class="metric-card violet"><span class="eyebrow">ALT-MEMPOOL ADMISSIONS</span><strong data-metric="admissions">—</strong><span>included / rejected (recent)</span></article>
+          </div>
+
+          <section class="trade-grid" aria-label="Run">
+            <article class="surface chart-surface">
+              <div class="surface-heading"><div><span class="eyebrow">LIVE · ALICE AND THE BOT</span><h3>Run console</h3></div><span class="queue-count" id="run-state">idle</span></div>
+              <pre class="log" id="log" aria-live="polite"></pre>
+              <div class="result-strip">
+                <div><span>QUOTED</span><strong data-r="quote">—</strong></div>
+                <div><span>RECEIVED</span><strong data-r="received">—</strong></div>
+                <div><span>LOSS</span><strong data-r="loss">—</strong></div>
+                <div><span>GAS USED</span><strong data-r="gas">—</strong></div>
+              </div>
+              <div class="verdict" id="verdict" hidden></div>
+            </article>
+            <article class="surface run-surface">
+              <div class="surface-heading"><div><span class="eyebrow">STEP 1 · PICK A SCENARIO</span><h3>What do you want to see?</h3></div></div>
+              <div class="preset-grid" id="presets"></div>
+              <details class="fine-tune" id="fine-tune"><summary><span class="eyebrow">STEP 2 · FINE-TUNE (OPTIONAL)</span></summary><div class="quick-flags" id="quick-flags"></div></details>
+              <div class="run-summary"><span class="eyebrow">STEP 3 · RUN</span><p id="run-summary">Loading…</p></div>
+              <ul class="problems" id="flag-problems" hidden></ul>
+              <div class="run-actions"><button id="run-main" class="primary-button">Run this <span aria-hidden="true">↗</span></button><button class="quiet-button outline" data-open-tab="flags">All flags</button></div>
+            </article>
+          </section>
+
+          <div class="overview-grid">
+            <article class="surface activity-surface"><div class="surface-heading"><div><span class="eyebrow">HISTORY</span><h3>Recent runs</h3></div><button class="quiet-button" data-refresh>Refresh ↻</button></div><div id="run-list" class="activity-list"><div class="loading-row">Loading runs…</div></div></article>
+            <article class="surface readiness-surface"><span class="eyebrow">SERVICES</span><h3>What is running</h3><p>The demo needs the chain, our patched alt-mempool node (which also runs the sealed mempool) and the builder. The devnet rows are the public hackathon network.</p><div id="service-lines"></div><a href="#" data-open-tab="checks">Inspect admission checks <span aria-hidden="true">↗</span></a></article>
+          </div>
+        </section>

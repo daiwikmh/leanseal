@@ -1,0 +1,94 @@
+---
+import '../styles/global.css';
+import '../styles/compile.css';
+import ConsolePreview from '../components/ConsolePreview';
+import LeanSealFooter from '../components/ui/demo';
+const steps = [
+  ['01', 'Sign', 'Your wallet authorizes the transaction with a post-quantum signature.', 'SLH-DSA / leanSphincs-s'],
+  ['02', 'Seal', 'Encrypt the signed transaction. Wrap its key for your chosen builders and a future drand round.', 'AES-256-GCM · ML-KEM-768'],
+  ['03', 'Check', 'The node checks the envelope’s label, stake, nonce, balance, builders, and deadline before admission.', 'Sealed-envelope admission'],
+  ['04', 'Include', 'A builder opens and checks the transaction, then relays it privately. The deadline provides a public fallback.', 'Builder relay / drand fallback'],
+];
+const tools = [
+  ['01', 'Run console', 'Compare a public swap with a sealed one. Follow the logs, quoted output, received amount, and gas.'],
+  ['02', 'Admission checks', 'Inspect the rule report for each transaction and see why an envelope was admitted or rejected.'],
+  ['03', 'Sealed lane', 'Follow envelopes, their deadline rounds, and whether a builder or the fallback opened them.'],
+  ['04', 'PQ wallets', 'Inspect deployed accounts, balances, stake, and the two signature schemes side by side.'],
+];
+const letters = [
+  ['#f76d18', 'M 100 20 C 148 -3 48 176 24 194 C 9 206 6 194 17 177 L 105 177'],
+  ['#2c9f28', 'M 124 165 C 86 217 10 200 15 143 C 21 94 126 75 130 107 C 132 131 51 150 17 148'],
+  ['#b29a00', 'M 127 103 C 79 67 14 114 17 165 C 20 218 91 204 119 149 L 136 100 L 119 189 Q 123 200 141 185'],
+  ['#8c89e7', 'M 18 190 L 35 102 L 18 190 C 41 109 105 72 125 115 C 140 143 107 185 130 192'],
+  ['#26251e', 'M 131 108 C 92 78 20 95 28 125 C 35 151 135 147 124 177 C 110 209 35 208 12 180'],
+  ['#916031', 'M 128 165 C 89 217 12 200 17 143 C 23 94 128 75 132 107 C 134 131 53 150 19 148'],
+  ['#2268ff', 'M 127 103 C 79 67 14 114 17 165 C 20 218 91 204 119 149 L 136 100 L 119 189 Q 123 200 141 185'],
+  ['#f76d18', 'M 102 20 C 150 -3 50 176 26 194 C 11 206 8 194 19 177 L 109 177'],
+];
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content="LeanSeal is a research prototype for private, post-quantum Ethereum transactions. Explore sealed swaps, smart wallets, and an alternative mempool." />
+    <link rel="icon" href="/logo.svg" type="image/svg+xml" />
+    <link rel="preload" href="/compile/gothic.woff2" as="font" type="font/woff2" crossorigin />
+    <title>leanseal — Private transactions. Post-quantum wallets.</title>
+  </head>
+  <body>
+    <a class="skip-link" href="#main">Skip to content</a>
+    <header class="site-header">
+      <a class="brand" href="/" aria-label="leanseal home"><img src="/leanseal-mark.svg" width="20" height="20" alt="" />leanseal</a>
+      <a class="console-link" href="/dashboard">Open console <span aria-hidden="true">↗</span></a>
+    </header>
+    <main id="main">
+      <section class="hero" aria-label="leanseal">
+        <div class="container hero-inner">
+          <h1><svg class="wordmark" viewBox="0 0 1110 220" fill="none" role="img" aria-label="leanseal">
+            <title>leanseal</title>
+            {letters.map(([color,path],i) => <g transform={`translate(${i * 137}, 0)`}><path class="hero-letter" d={path} stroke={color} pathLength="1" style={`--letter:${i}`} /></g>)}
+          </svg></h1>
+          <div class="hero-caption"><p>Private transactions. Post-quantum wallets.</p><p>Built for Ethereum</p></div>
+        </div>
+      </section>
+
+      <section class="container intro">
+        <div><p class="intro-lead">Your transaction shouldn’t be everyone else’s opportunity.</p></div>
+        <div><p>LeanSeal pairs post-quantum smart wallets with encrypted transaction envelopes. Sign a swap, seal its contents, and send it through a dedicated lane to the builders you choose.</p></div>
+        <div class="intro-action"><p>Explore the working research prototype.</p><a class="solid-link" href="/dashboard">Open the console <span aria-hidden="true">↗</span></a><a href="#how-it-works">See how it works ↓</a></div>
+      </section>
+
+      <section class="container section-space" id="how-it-works">
+        <h2>From your wallet to the block.</h2>
+        <p class="muted">A sealed envelope, two ways to open it.</p>
+        <div class="journey-art" aria-label="A wallet signs a transaction, an envelope encrypts it, and a chosen builder opens it. A timelock provides a public fallback.">
+          <div><img class="journey-image" src="/images/leanseal/wallet-scanlines.png" alt="Photograph of a leather wallet rendered in violet waveform lines" width="1200" height="800" loading="lazy" /><span>Your wallet</span></div><span class="journey-arrow" aria-hidden="true">→</span>
+          <div><img class="journey-image" src="/images/leanseal/envelope-scanlines.png" alt="Photograph of a wax-sealed envelope rendered in turquoise waveform lines" width="1200" height="800" loading="lazy" /><span>Sealed envelope</span></div><span class="journey-arrow" aria-hidden="true">→</span>
+          <div><img class="journey-image" src="/images/leanseal/builders-scanlines.png" alt="Photograph of data-center server racks rendered in green waveform lines" width="1200" height="800" loading="lazy" /><span>Chosen builder → block</span></div>
+          <p class="fallback-line">If the builder doesn’t act <span aria-hidden="true">↳</span> drand deadline → public submission</p>
+        </div>
+        <ol class="steps">{steps.map(([number,title,text,tech]) => <li><span class="eyebrow">{number}</span><h3>{title}</h3><p class="muted">{text}</p><span class="tech-label">{tech}</span></li>)}</ol>
+      </section>
+
+      <section class="container section-space" id="console">
+        <div class="section-heading"><div><h2>See what happens at every step.</h2><p class="muted">The console brings the experiment, wallet, and node together.</p></div><a class="text-link" href="/dashboard">Open console ↗</a></div>
+        <ConsolePreview client:load />
+        <div class="tools-grid">{tools.map(([number,title,text])=><article><span class="eyebrow">{number}</span><h3>{title}</h3><p class="muted">{text}</p></article>)}</div>
+      </section>
+
+      <section class="container section-space trust" id="trust">
+        <div><h2>Understand the trust model.</h2><p class="muted">A working research prototype, with explicit boundaries.</p></div>
+        <div class="questions">
+          <details open><summary>Who can read a sealed transaction?</summary><p>The builders you select can decrypt it before the deadline. Public mempool observers see ciphertext, but a selected builder could leak the transaction, delay it, or trade against it within your slippage limit.</p></details>
+          <details><summary>What happens when the timelock opens?</summary><p>The drand round makes the fallback key publicly available. The node can open and submit the transaction, but inclusion is not guaranteed and the public transaction can again be exposed to front-running. drand uses BLS; this timelock is not post-quantum.</p></details>
+          <details><summary>Is this ready for real funds?</summary><p>No. LeanSeal is an unaudited research prototype. The sealed swap demo runs on the local chain. Its privileged relay is a development shortcut, not a production inclusion mechanism.</p></details>
+          <details><summary>What do I need to run the demo?</summary><p>The local chain, patched alternative mempool node, LeanSeal envelope node, builder, and demo API must be running. Open the console to inspect service health before choosing a scenario.</p></details>
+        </div>
+      </section>
+
+      <section class="closing container"><h2>Sign for tomorrow.<br />Seal for today.</h2><a class="pill" href="/dashboard">Open leanseal <span aria-hidden="true">→</span></a><p class="muted">Research prototype · Local chain &amp; devnet</p></section>
+    </main>
+    <LeanSealFooter client:visible />
+  </body>
+</html>
