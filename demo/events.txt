@@ -1,0 +1,50 @@
+data: {"type":"start","mode":"public"}
+
+data: {"type":"line","stream":"bot","line":"[bot +0.0s] watching public alt mempool http://127.0.0.1:14347/rpc and LeanSeal envelopes; bot ETH 50002091335246994"}
+
+data: {"type":"line","stream":"alice","line":"{\"account\":\"0x42def1c5b6e5679e64f243e7767f27f8132b695a\",\"amountInWei\":\"100000000000000\",\"localQuote\":\"96834648711107668\",\"minOut\":\"93929609249774437\"}"}
+
+data: {"type":"line","stream":"alice","line":"  signed in 3.0s"}
+
+data: {"type":"line","stream":"alice","line":"ethrex simulation: {\"canonicalMempoolValid\":false,\"canonicalMempoolViolation\":\"prefix gas budget exceeded: 200100 > 100000 (MAX_VERIFY_GAS)\",\"erc7562Trace\":null,\"erc7562TraceError\":null,\"executionError\":null,\"executionStatus\":\"success\",\"frames\":[{\"gasUsed\":\"0x25d70\",\"succeeded\":true},{\"gasUsed\":\"0x1a0b7\",\"succeeded\":true}],\"gasUsed\":\"0x54f69\",\"maxCost\":\"0x64c3d4b482800\",\"payer\":\"0x42def1c5b6e5679e64f243e7767f27f8132b695a\",\"prefixShape\":\"SelfVerify\"}"}
+
+data: {"type":"line","stream":"alice","line":"ADMITTED by http://127.0.0.1:14347/rpc: 0x6f0632134351baad3ee2510ccd7add91775bd5f623798331123c5ad99ee7dccd"}
+
+data: {"type":"line","stream":"alice","line":"{\"tusdBefore\":\"95754336491870702\"}"}
+
+data: {"type":"line","stream":"bot","line":"[bot +3.5s] VICTIM: 0x42Def1c5B6E5679E64F243E7767F27f8132b695a swaps 100000000000000 wei ETH -> tUSD, min 93929609249774437"}
+
+data: {"type":"line","stream":"bot","line":"[bot +3.5s] front-run 156182050704955 wei so victim gets 93929613267831525 (just above min); expect 158264219719453 wei back"}
+
+data: {"type":"line","stream":"bot","line":"[bot +7.5s] front-run mined in block 87"}
+
+data: {"type":"line","stream":"bot","line":"[bot +18.1s] victim tx included (by block 89)"}
+
+data: {"type":"line","stream":"bot","line":"[bot +24.1s] back-run mined in block 90; bot profit 2082169014497 wei (before gas)"}
+
+data: {"type":"result","mode":"public","quote":"96834648711107668","received":"93929613267831517","lossPct":2.9999,"botTargeted":true,"botProfit":"2082169014497"}
+
+data: {"type":"start","mode":"sealed"}
+
+data: {"type":"line","stream":"bot","line":"[bot +0.0s] watching public alt mempool http://127.0.0.1:14347/rpc and LeanSeal envelopes; bot ETH 50004173504261491"}
+
+data: {"type":"line","stream":"alice","line":"[+0.0s] quote 100000000000000 wei ETH -> 95006671371053307 tUSD (min 92156471229921707), read locally from StateView"}
+
+data: {"type":"line","stream":"alice","line":"  signed in 3.1s"}
+
+data: {"type":"line","stream":"alice","line":"[+3.1s] signed with SLH-DSA, tx 0x50cd8c6531f322f53d86524ed57cee3482e5088c5dd3b5f807cb5fa28fe642b7"}
+
+data: {"type":"line","stream":"alice","line":"[+10.5s] sealed envelope 0x4c20ab449fc25c7d94cd33c6013c535e6ad781a853dd07c9f35063b86d68bf9b sent (builders builder-1, deadline drand round 33714686)"}
+
+data: {"type":"line","stream":"bot","line":"[bot +11.2s] sealed envelope 0x4c20ab449f… from 0x42def1c5b6e5679e64f243e7767f27f8132b695a: contents unreadable (5117 encrypted bytes), cannot target"}
+
+data: {"type":"line","stream":"alice","line":"[+11.5s] envelope builder-submitted (opened by builder-1)"}
+
+data: {"type":"line","stream":"alice","line":"[+17.5s] included in block 94; frame 0: 149502 gas, status 0x1; frame 1: 106711 gas, status 0x1"}
+
+data: {"type":"line","stream":"alice","line":"[+17.5s] tUSD received: 95006671371053302 (min was 92156471229921707)"}
+
+data: {"type":"line","stream":"bot","line":"[bot +30.0s] no readable swap seen before timeout: nothing to sandwich"}
+
+data: {"type":"result","mode":"sealed","quote":"95006671371053307","received":"95006671371053302","lossPct":0,"botTargeted":false,"botProfit":"0"}
+

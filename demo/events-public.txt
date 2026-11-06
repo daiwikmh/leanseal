@@ -1,0 +1,64 @@
+data: {"type":"start","mode":"public"}
+
+data: {"type":"line","stream":"bot","line":"[bot +0.0s] watching public alt mempool http://127.0.0.1:14347/rpc and LeanSeal envelopes; bot ETH 50002091335246994"}
+
+data: {"type":"line","stream":"alice","line":"{\"account\":\"0xc773c38d2b2990b5947aa5fe40c0b64f0f0720c7\",\"amountInWei\":\"100000000000000\",\"localQuote\":\"94959376015883408\",\"minOut\":\"92110594735406905\"}"}
+
+data: {"type":"line","stream":"alice","line":"  signed in 11.0s"}
+
+data: {"type":"line","stream":"alice","line":"ethrex simulation: {\"canonicalMempoolValid\":false,\"canonicalMempoolViolation\":\"prefix gas budget exceeded: 200100 > 100000 (MAX_VERIFY_GAS)\",\"erc7562Trace\":null,\"erc7562TraceError\":null,\"executionError\":null,\"executionStatus\":\"success\",\"frames\":[{\"gasUsed\":\"0x2372d\",\"succeeded\":true},{\"gasUsed\":\"0x1a1cb\",\"succeeded\":true}],\"gasUsed\":\"0x52a46\",\"maxCost\":\"0x64c42e1cb1800\",\"payer\":\"0xc773c38d2b2990b5947aa5fe40c0b64f0f0720c7\",\"prefixShape\":\"SelfVerify\"}"}
+
+data: {"type":"line","stream":"alice","line":"ADMITTED by http://127.0.0.1:14347/rpc: 0xa39872c2c76a87c9afa697adda12093cfc99d0d1298e93a2cdd4e3ce08cf5ba7"}
+
+data: {"type":"line","stream":"alice","line":"{\"tusdBefore\":\"192588985202978366\"}"}
+
+data: {"type":"line","stream":"bot","line":"[bot +11.9s] VICTIM: 0xC773C38D2b2990B5947Aa5fe40c0b64f0F0720c7 swaps 100000000000000 wei ETH -> tUSD, min 92110594735406905"}
+
+data: {"type":"line","stream":"bot","line":"[bot +11.9s] front-run 157716870307921 wei so victim gets 92110595694566671 (just above min); expect 159789637420547 wei back"}
+
+data: {"type":"line","stream":"bot","line":"StepError: Transaction 0x711e8bf18c94f24ce533218c7c9bfe970c635928849ebf5962565198d36dad60 was not mined within 120s"}
+
+data: {"type":"line","stream":"bot","line":"    at waitMined (/Users/daiwi/project/lean/workshop/src/lib/chain.ts:60:9)"}
+
+data: {"type":"line","stream":"bot","line":"    at async botCall (/Users/daiwi/project/lean/workshop/src/leanseal/mev_bot.ts:93:13)"}
+
+data: {"type":"line","stream":"bot","line":"    at async main (/Users/daiwi/project/lean/workshop/src/leanseal/mev_bot.ts:129:22) {"}
+
+data: {"type":"line","stream":"bot","line":"  code: 'TX_NOT_MINED',"}
+
+data: {"type":"line","stream":"bot","line":"  rule: undefined,"}
+
+data: {"type":"line","stream":"bot","line":"  hint: 'the devnet may be stalled; check the explorer and retry'"}
+
+data: {"type":"line","stream":"bot","line":"}"}
+
+data: {"type":"result","mode":"public","quote":"94959376015883408","received":"0","lossPct":100,"botTargeted":true,"botProfit":"0"}
+
+data: {"type":"start","mode":"public"}
+
+data: {"type":"line","stream":"bot","line":"[bot +4.0s] deployed bot contract 0xc58e8c149c984e341bb17f18a9a4ce851edf1d13 with 50000000000000000 wei"}
+
+data: {"type":"line","stream":"bot","line":"[bot +4.0s] watching public alt mempool http://127.0.0.1:14347/rpc and LeanSeal envelopes; bot ETH 50000000000000000"}
+
+data: {"type":"line","stream":"alice","line":"{\"account\":\"0x42def1c5b6e5679e64f243e7767f27f8132b695a\",\"amountInWei\":\"100000000000000\",\"localQuote\":\"98715803439706139\",\"minOut\":\"95754329336514954\"}"}
+
+data: {"type":"line","stream":"alice","line":"  signed in 3.1s"}
+
+data: {"type":"line","stream":"alice","line":"ethrex simulation: {\"canonicalMempoolValid\":false,\"canonicalMempoolViolation\":\"prefix gas budget exceeded: 200100 > 100000 (MAX_VERIFY_GAS)\",\"erc7562Trace\":null,\"erc7562TraceError\":null,\"executionError\":null,\"executionStatus\":\"success\",\"frames\":[{\"gasUsed\":\"0x26f04\",\"succeeded\":true},{\"gasUsed\":\"0x1a0bb\",\"succeeded\":true}],\"gasUsed\":\"0x85e25\",\"maxCost\":\"0x64c4e0ed0f800\",\"payer\":\"0x42def1c5b6e5679e64f243e7767f27f8132b695a\",\"prefixShape\":\"SelfVerify\"}"}
+
+data: {"type":"line","stream":"alice","line":"ADMITTED by http://127.0.0.1:14347/rpc: 0xfa8c4b33902a10b147bcc18ea6bf879a1c9d4406946538fddbd195ea722d0f85"}
+
+data: {"type":"line","stream":"alice","line":"{\"tusdBefore\":\"0\"}"}
+
+data: {"type":"line","stream":"bot","line":"[bot +7.6s] VICTIM: 0x42Def1c5B6E5679E64F243E7767F27f8132b695a swaps 100000000000000 wei ETH -> tUSD, min 95754329336514954"}
+
+data: {"type":"line","stream":"bot","line":"[bot +7.6s] front-run 154686570167540 wei so victim gets 95754336491870721 (just above min); expect 156777905414534 wei back"}
+
+data: {"type":"line","stream":"bot","line":"[bot +9.7s] front-run mined in block 78"}
+
+data: {"type":"line","stream":"bot","line":"[bot +14.2s] victim tx included (by block 79)"}
+
+data: {"type":"line","stream":"bot","line":"[bot +20.2s] back-run mined in block 80; bot profit 2091335246994 wei (before gas)"}
+
+data: {"type":"result","mode":"public","quote":"98715803439706139","received":"0","lossPct":100,"botTargeted":true,"botProfit":"2091335246994"}
+
