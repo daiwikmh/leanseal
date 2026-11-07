@@ -221,7 +221,7 @@ function showLatestRun() {
 }
 
 function renderFacts() {
-  $('#side-network').replaceChildren(el('i'), document.createTextNode(flags.network === 'devnet' ? ' Public hackathon devnet' : ' Our local chain'));
+  $('#side-network').replaceChildren(el('i'), document.createTextNode(flags.network === 'devnet' ? ' Public hackathon devnet · chain 1337' : ' Local chain on this machine'));
   $$<HTMLButtonElement>('#net-switch button').forEach((b) => {
     const on = b.dataset.net === flags.network;
     b.classList.toggle('on', on);
@@ -534,7 +534,7 @@ function quote(side: 'buy' | 'sell', amount: bigint): bigint | null {
 function maxAmount(): bigint {
   if (!vault.ready) return 0n;
   if (orderSide === 'buy') {
-    const total = BigInt(vault.vaultEth!) + BigInt(vault.walletEth!) - BOND;
+    const total = BigInt(vault.vaultEth!) + BigInt(vault.walletEth!) - BOND * 3n;
     return total > 0n ? total : 0n;
   }
   return BigInt(vault.vaultTusd!) + BigInt(vault.walletTusd!);
@@ -598,6 +598,12 @@ function submitOrder() {
   void postAction('/api/run', { ...base, network: 'devnet', mevBot: false, slippageBps: orderBps, order: { side: orderSide, amountWei: amount.toString() } });
 }
 
+function renderNetworkLock() {
+  const locked = isPublic || mode === 'institution';
+  $('#net-switch').hidden = locked;
+  $('#net-fixed').hidden = !locked;
+}
+
 function applyMode(next: Mode) {
   mode = next;
   try {
@@ -609,7 +615,7 @@ function applyMode(next: Mode) {
   const inst = next === 'institution';
   $('#order-ticket').hidden = !inst;
   $('#scenario-block').hidden = inst;
-  $('#net-switch').closest<HTMLElement>('.side-block')!.hidden = inst || isPublic;
+  renderNetworkLock();
   if (inst) void loadVault();
   $('#wallet-eyebrow').textContent = next === 'institution' ? 'DESK OPERATOR WALLET' : 'YOUR WALLET';
   pages.overview.meta = next === 'institution' ? 'Sealed block trades on Uniswap v4' : 'Pick a scenario and run it';
@@ -917,7 +923,7 @@ async function init() {
   defaults = body.defaults;
   const stored = isPublic ? {} : readStoredFlags();
   flags = Object.fromEntries(schema.map((d) => [d.key, d.options.includes(stored[d.key]) ? stored[d.key] : defaults[d.key]]));
-  if (isPublic) $('#net-switch').closest<HTMLElement>('.side-block')!.hidden = true;
+  renderNetworkLock();
   renderControls();
   renderFacts();
   connectEvents();
