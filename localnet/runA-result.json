@@ -1,0 +1,15 @@
+{
+  "sealedEnvelopesSeen": 0,
+  "sandwiched": true,
+  "victim": {
+    "sender": "0xC773C38D2b2990B5947Aa5fe40c0b64f0F0720c7",
+    "nonce": "2",
+    "amountIn": "100000000000000",
+    "minOut": "95754329336514954"
+  },
+  "frontRunWei": "154686570167540",
+  "frontBlock": "116",
+  "victimByBlock": "119",
+  "backBlock": "120",
+  "botProfitWeiBeforeGas": "2091335246994"
+}
