@@ -471,12 +471,14 @@ function setResult(run: Run) {
   const out = run.order?.side === 'sell' ? (w: string) => eth(w) : (w: string) => tusd(w);
   $('[data-r="quote"]').textContent = run.quote && run.quote !== '0' ? out(run.quote) : '—';
   $('[data-r="received"]').textContent = run.received && run.received !== '0' ? out(run.received) : '—';
-  $('[data-r="loss"]').textContent = run.lossPct === undefined ? '—' : `${run.lossPct.toFixed(3)}%`;
+  $('[data-r="loss"]').textContent = run.lossPct === undefined ? '—' : run.flags.lane === 'batch' && run.lossPct > 0.01 ? `${run.lossPct.toFixed(3)}% (price move)` : `${run.lossPct.toFixed(3)}%`;
   $('[data-r="gas"]').textContent = run.gasUsed ? run.gasUsed.toLocaleString() : '—';
   const v = $('#verdict');
   v.hidden = false;
   $('#verdict-empty').hidden = true;
-  v.className = `verdict ${run.ok && (run.lossPct ?? 0) <= 0.01 ? 'good' : 'bad'}`;
+  const limit = Number(run.flags.slippageBps ?? 300) / 100;
+  const protectedOk = run.ok && (run.flags.lane === 'batch' ? !run.batch?.refunded && (run.lossPct ?? 0) < limit : (run.lossPct ?? 0) <= 0.01);
+  v.className = `verdict ${protectedOk ? 'good' : 'bad'}`;
   v.textContent = verdictText(run) + sizeNote(run);
   renderTxs(run);
 }
@@ -510,8 +512,10 @@ function renderTxs(run: Run | null) {
   const net = String(run.flags.network);
   const rows: HTMLElement[] = [];
   if (run.txHash) {
-    const label = run.flags.action === 'onboard' ? 'Wallet created' : run.flags.lane === 'batch' ? 'Commit' : run.flags.action === 'transfer' ? 'Transfer' : 'Swap';
-    rows.push(txRow(label, run.txHash, 'Frame transaction through the alt mempool', true, net));
+    const action = run.flags.action;
+    const label = action === 'onboard' ? 'Wallet created' : action === 'faucet' ? 'Test funds' : action === 'withdraw' ? 'Withdraw' : run.flags.lane === 'batch' ? 'Commit' : action === 'transfer' ? 'Transfer' : 'Swap';
+    const plain = action === 'faucet';
+    rows.push(txRow(label, run.txHash, plain ? 'Ordinary transfer from our funding key (not a frame transaction, so the alt-mempool explorer does not list it)' : 'Frame transaction through the alt mempool', !plain, net));
   }
   if (run.batch?.revealTx) rows.push(txRow('Reveal', run.batch.revealTx, 'Sent by a node keeper (normal transaction)', false, net));
   if (run.batch?.ticket) rows.push(txRow('Sealed ticket', run.batch.ticket, 'Not a transaction: lives only in our sealed mempool', false, net));
@@ -664,7 +668,11 @@ function verdictText(run: Run) {
   if (run.flags.lane === 'batch' && run.batch?.refunded) return `Refunded: by the time batch ${run.batch.round ?? '?'} settled, the price had moved past your ${Number(run.flags.slippageBps) / 100}% limit, so the pool gave your money back instead of filling at a worse price. Nothing was lost.`;
   if (run.flags.lane === 'batch') {
     const blocked = run.batch?.frontRunsBlocked ? ` The bot saw the order only after it was revealed and tried to front-run ${run.batch.frontRunsBlocked}×: ${run.batch.blockedReason}.` : '';
-    return `Batch ${run.batch?.round ?? '?'} settled at one price: loss ${run.lossPct?.toFixed(3) ?? '0'}%. Reveal ${run.batch?.ticketStatus ?? '?'}${run.batch?.note ? ` (${run.batch.note})` : ''}.${blocked}`;
+    const drift = run.lossPct ?? 0;
+    const price = drift <= 0.01
+      ? 'No loss to MEV: filled at the quoted price.'
+      : `No loss to MEV. The fill is ${drift.toFixed(3)}% from the quote because the pool price moved before the batch settled (other orders traded first); that is within your ${(Number(run.flags.slippageBps ?? 300) / 100)}% limit, and everyone in the batch paid the same price.`;
+    return `Batch ${run.batch?.round ?? '?'} settled at one price. ${price}${blocked}`;
   }
   if (run.botTargeted && (run.lossPct ?? 0) > 0.01) return `Sandwiched: the bot read the swap and made ${run.botProfit ?? '?'} wei; Alice lost ${run.lossPct?.toFixed(3) ?? '?'}%.${verify}`;
   return run.flags.lane === 'sealed'
