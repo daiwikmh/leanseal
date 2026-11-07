@@ -1,0 +1,10 @@
+{
+  "deployer": "0xa5a76017c1c193dfb4c78a3502810af48ac8470f",
+  "hook": "0x3aBf5468CA1b8d2E1bfd0AA90B97Cd016eB6C080",
+  "salt": "0x0000000000000000000000000000000000000000000000000000000000005db9",
+  "roundBlocks": "4",
+  "revealRounds": "2",
+  "bond": "1000000000",
+  "poolId": "0x6bb1acb5fec343ec822762ca297db291fccdd311c319e1d88ae8fa4384dd7bf3",
+  "seeded": true
+}

@@ -7,7 +7,7 @@ import type { Address } from "viem";
 import { StepError } from "./output.js";
 
 /** The one configuration file. The code reads it and never writes it. */
-export const CONFIG_FILE = fileURLToPath(new URL("../../workshop.config.json5", import.meta.url));
+export const CONFIG_FILE = process.env.WORKSHOP_CONFIG ?? fileURLToPath(new URL("../../workshop.config.json5", import.meta.url));
 
 export interface Config {
   chainId: number;

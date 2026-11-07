@@ -1,0 +1,7 @@
+{
+  "verifier": "0x00a8dab97701bc73753ce9cb80ae59029381d4e7",
+  "module": "0x0aed81f76e7fc3d372420dec9e1a2df095a3d6f7",
+  "implementation": "0xc773c38d2b2990b5947aa5fe40c0b64f0f0720c7",
+  "factory": "0x42def1c5b6e5679e64f243e7767f27f8132b695a",
+  "paymaster": "0xe72458f41ce1d6791908c38db0b4c0f750be3736"
+}
