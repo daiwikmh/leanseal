@@ -340,7 +340,7 @@ function runScript(s: Session, name: "alice" | "bot", args: string[], env: NodeJ
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function waitReceipt(net: Net, hash: string, canNudge: () => boolean, timeoutMs = 90_000): Promise<any> {
+async function waitReceipt(net: Net, hash: string, canNudge: () => boolean, timeoutMs = 240_000): Promise<any> {
   const end = Date.now() + timeoutMs;
   while (Date.now() < end) {
     const r = await rpc(NETS[net].rpc, "eth_getTransactionReceipt", [hash]).catch(() => null);
@@ -380,7 +380,7 @@ async function experiment(f: Flags, s: Session, order?: Order, transferTo?: stri
     let ready: () => void = () => {};
     const isReady = new Promise<void>((r) => { ready = r; });
     const botScript = f.lane === "batch" ? "src/batch/batch_bot.ts" : "src/leanseal/mev_bot.ts";
-    const botTimeout = f.lane === "public" ? "90000" : f.lane === "batch" ? "200000" : "30000";
+    const botTimeout = f.lane === "public" ? "90000" : f.lane === "batch" ? "420000" : "30000";
     let releaseBot: () => void = () => {};
     const botFinished = new Promise<void>((r) => { releaseBot = r; });
     if (PUBLIC) void withDeployer(() => botFinished);
@@ -442,7 +442,7 @@ async function experiment(f: Flags, s: Session, order?: Order, transferTo?: stri
       run.frameGas = (receipt.frameReceipts ?? []).map((fr: { gasUsed: string }) => Number(BigInt(fr.gasUsed)));
       run.ok = receipt.status === "0x1";
     } else {
-      run.error = "not mined within 90 s";
+      run.error = "not mined within 240 s";
     }
   }
   if (!run.ok && !run.error) run.error = failure || `script exited with code ${code}`;
