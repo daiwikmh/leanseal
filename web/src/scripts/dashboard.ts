@@ -102,14 +102,13 @@ let flags: Flags = {};
 let runs: Run[] = [];
 let running = false;
 let selectedTx = '';
-let mempoolView: 'standard' | 'sealed' = 'standard';
 let sealedInfo: SealedInfo | null = null;
 
 const pages: Record<string, { label: string; meta: string }> = {
   overview: { label: 'Run', meta: 'Pick a scenario and run it' },
   flags: { label: 'Settings', meta: 'Every option, one place' },
-  checks: { label: 'Checks', meta: 'Why the mempool let each transaction in' },
-  sealed: { label: 'Sealed', meta: 'Encrypted envelopes and who opened them' },
+  checks: { label: 'Checks', meta: 'Why the alt mempool let each transaction in' },
+  sealed: { label: 'Sealed mempool', meta: 'Our ERC-8421 custom mempool and the orders it carries' },
   wallets: { label: 'Wallets', meta: 'Quantum-safe accounts and balances' }
 };
 
@@ -189,6 +188,8 @@ function activateTab(name: string) {
     panel.classList.toggle('active', active);
   });
   if (name === 'checks') void loadAdmissions();
+  if (name === 'sealed') void loadSealedInfo();
+  if (name === 'wallets') { renderWallets(); if (passkeyStatus.unlocked) void loadVault(); }
 }
 
 function showLive(name: string) {
@@ -404,12 +405,18 @@ function renderControls() {
     row.append(el('span', '', def.label), segFor(def));
     return row;
   }));
-  $('#flag-grid').replaceChildren(...schema.map((def) => {
-    const card = el('article', 'surface flag-card');
-    card.append(el('span', 'eyebrow', def.key.toUpperCase()), el('h3', '', def.label), el('p', '', def.help), segFor(def));
+  const locked = new Set(isPublic || mode === 'institution' ? ['network'] : []);
+  $('#settings-note').textContent = mode === 'institution'
+    ? 'Institution orders use the order ticket on the Run tab; these settings apply to the Individual scenarios.'
+    : 'Saved in this browser. Greyed-out options can\'t work with the rest; hover one to see why.';
+  $('#flag-grid').replaceChildren(...schema.filter((def) => !locked.has(def.key)).map((def) => {
+    const row = el('div', 'settings-row');
+    const label = el('div', 'settings-label');
+    label.append(el('strong', '', def.label), el('small', '', def.help));
+    row.append(label, segFor(def));
     const current = optionState[def.key]?.find((o) => o.value === flags[def.key]);
-    if (current && !current.ok) card.append(el('p', 'seg-note', current.reason));
-    return card;
+    if (current && !current.ok) row.append(el('p', 'seg-note', current.reason));
+    return row;
   }));
 }
 
@@ -584,6 +591,7 @@ async function loadVault() {
   const res = await fetch('/api/vault?network=devnet').catch(() => null);
   vault = res?.ok ? await res.json() as Vault : { ready: false };
   renderOrder();
+  if (!$<HTMLElement>('[data-panel="wallets"]').hidden) renderWallets();
 }
 
 async function postAction(path: string, body?: unknown) {
@@ -723,31 +731,48 @@ async function loadStatus() {
   renderWallets(s.wallets, s.reputation ?? { up: false, ms: 0 });
 }
 
-function renderWallets(wallets: Wallet[], reputation: Probe) {
+let lastWallets: { wallets: Wallet[]; reputation: Probe } = { wallets: [], reputation: { up: false, ms: 0 } };
+
+function walletCard(eyebrow: string, title: string, rows: Array<[string, string]>, foot: [string, string]) {
+  const card = el('article', 'surface asset-card wallet-card');
+  card.append(el('span', 'eyebrow', eyebrow), el('h3', 'mono', title));
+  const dl = el('dl');
+  rows.forEach(([k, v]) => dl.append(el('dt', '', k), el('dd', '', v)));
+  const footer = el('footer');
+  footer.append(el('span', '', foot[0]), el('span', '', foot[1]));
+  card.append(dl, footer);
+  return card;
+}
+
+function renderWallets(wallets: Wallet[] = lastWallets.wallets, reputation: Probe = lastWallets.reputation) {
+  lastWallets = { wallets, reputation };
   const rep = new Map<string, { status: string; opsSeen: number; opsIncluded: number }>();
   const items = (reputation.value as { items?: Array<{ address: string; status: string; opsSeen: number; opsIncluded: number }> } | undefined)?.items ?? [];
   items.forEach((r) => rep.set(r.address.toLowerCase(), r));
-  $('#wallet-cards').replaceChildren(...wallets.map((w) => {
+  const cards: HTMLElement[] = [];
+  const mine = (passkeyStatus.wallets ?? []).filter((w) => w.available);
+  if (!passkeyStatus.unlocked || !keyLoaded) {
     const card = el('article', 'surface asset-card wallet-card');
-    card.append(el('span', 'eyebrow', `${w.network.toUpperCase()} · ${w.scheme === 'lss' ? 'LEANSPHINCS-S' : 'SLH-DSA-SHA2'}`));
-    card.append(el('h3', '', w.deployed ? short(w.account) : 'Not deployed'));
-    if (w.deployed) {
-      const r = rep.get(w.account!.toLowerCase());
-      const dl = el('dl');
-      const rows: Array<[string, string]> = [
-        ['ETH', eth(w.ethWei)],
-        ['tUSD', w.tusdWei ? tusd(w.tusdWei) : '—'],
-        ['Stake', w.staked ? eth(w.stakeWei) : 'unstaked'],
-        ['Reputation', r ? `${r.status} · ${r.opsIncluded}/${r.opsSeen} included` : w.network === 'local' ? 'no record' : '—']
-      ];
-      rows.forEach(([k, v]) => dl.append(el('dt', '', k), el('dd', '', v)));
-      card.append(dl);
+    card.append(el('span', 'eyebrow', 'YOUR PASSKEY WALLET'), el('h3', '', 'Locked'), el('p', 'muted', 'Unlock with your passkey in the sidebar to see your wallet here.'));
+    cards.push(card);
+  }
+  mine.forEach((w) => {
+    const rows: Array<[string, string]> = [['Status', w.created ? 'Created' : 'Not created yet'], ['Wallet ETH', eth(w.ethWei)]];
+    if (w.network === 'devnet' && vault.ready && vault.account?.toLowerCase() === w.account?.toLowerCase()) {
+      rows.push(['Pool vault', `${fromWei(BigInt(vault.vaultEth!))} ETH · ${fromWei(BigInt(vault.vaultTusd!))} tUSD`], ['Wallet tUSD', `${fromWei(BigInt(vault.walletTusd!))} tUSD`]);
     }
-    const foot = el('footer');
-    foot.append(el('span', '', w.scheme === 'lss' ? 'fits 100k unstaked' : 'needs stake (over 100k)'), el('span', '', w.network));
-    card.append(foot);
-    return card;
-  }));
+    cards.push(walletCard(`YOUR PASSKEY WALLET · ${w.network === 'devnet' ? 'LIVE DEVNET' : 'LOCAL'}`, short(w.account), rows, ['leanSphincs-s · key in your browser', w.network]));
+  });
+  wallets.filter((w) => w.deployed).forEach((w) => {
+    const r = rep.get(w.account!.toLowerCase());
+    cards.push(walletCard(`DEMO WALLET · ${w.network.toUpperCase()} · ${w.scheme === 'lss' ? 'LEANSPHINCS-S' : 'SLH-DSA-SHA2'}`, short(w.account), [
+      ['ETH', eth(w.ethWei)],
+      ['tUSD', w.tusdWei ? tusd(w.tusdWei) : '—'],
+      ['Stake', w.staked ? eth(w.stakeWei) : 'unstaked'],
+      ['Reputation', r ? `${r.status} · ${r.opsIncluded}/${r.opsSeen} included` : '—'],
+    ], [w.scheme === 'lss' ? 'fits 100k unstaked' : 'needs stake (over 100k)', w.network]));
+  });
+  $('#wallet-cards').replaceChildren(...cards);
 }
 
 async function loadRuns() {
@@ -765,53 +790,96 @@ async function loadRuns() {
     row.addEventListener('click', () => { if (!running) { setResult(r); $('#log').textContent = ''; $('#run-state').textContent = r.ok ? 'done' : 'failed'; showLive('result'); } });
     return row;
   }) : [el('div', 'loading-row', 'No runs yet. Pick flags and press Run.')]));
-  renderSealed();
-}
-
-function renderSealed() {
-  const sealed = runs.filter((r) => r.flags.lane === 'sealed');
-  const last = sealed[0];
-  $('[data-s="sign"]').textContent = last?.signMs !== undefined ? `${last.signMs} ms` : '—';
-  $('[data-s="round"]').textContent = last?.envelope?.round ? `#${last.envelope.round}` : '—';
-  $('[data-s="door"]').textContent = last ? (last.envelope ? 'passed' : 'refused') : '—';
-  $('[data-s="opened"]').textContent = last?.envelope?.openedBy ?? (last ? 'not opened' : '—');
-  $('#sealed-last').textContent = last ? `last: run #${last.id}, ${last.ok ? `block ${last.block}` : last.error ?? 'failed'}` : 'no sealed run yet';
-  const verdicts = new Map((last?.sealedChecks ?? []).map((c) => [c.rule, c]));
-  $('#door-list').replaceChildren(...(sealedInfo?.rules ?? []).map((r) => {
-    const c = verdicts.get(r.id);
-    const row = el('div', `check-row ${c?.verdict ?? ''}`);
-    row.append(el('span', 'dot'), el('span', '', `${r.id} · ${r.name}`), el('em', '', c ? c.verdict.toUpperCase() : ''), el('small', '', c?.detail ?? r.text));
-    return row;
-  }));
-  const table = $('#envelope-table');
-  table.replaceChildren(...(sealed.length ? sealed.slice(0, 10).map((r) => {
-    const tr = el('tr');
-    tr.append(el('td', 'mono', short(r.envelope?.id)), el('td', '', r.envelope?.status ?? 'refused at the door'), el('td', '', r.envelope?.openedBy ?? '—'), el('td', '', r.lossPct !== undefined ? `${r.lossPct.toFixed(3)}%` : '—'));
-    return tr;
-  }) : [(() => { const tr = el('tr'); const td = el('td', 'loading-row', 'No sealed runs yet.'); td.setAttribute('colspan', '4'); tr.append(td); return tr; })()]));
 }
 
 const keyOf = (a: Admission) => a.txHash ?? a.envelopeId ?? `refused #${a.id}`;
 
+const RULES_DOC = 'https://github.com/daiwikmh/leanseal/blob/main/docs/leanseal-mempool.md';
+
+function kv(target: string, rows: Array<[string, string | HTMLElement]>) {
+  $(target).replaceChildren(...rows.flatMap(([k, v]) => {
+    const dd = el('dd');
+    if (typeof v === 'string') dd.textContent = v;
+    else dd.append(v);
+    return [el('dt', '', k), dd];
+  }));
+}
+
+function link(text: string, href: string) {
+  const a = el('a', '', text) as HTMLAnchorElement;
+  a.href = href;
+  a.target = '_blank';
+  a.rel = 'noopener';
+  return a;
+}
+
 async function loadSealedInfo() {
-  const res = await fetch('/api/mempool').catch(() => null);
-  if (!res?.ok) return;
+  const net = isPublic || mode === 'institution' ? 'devnet' : String(flags.network);
+  const res = await fetch(`/api/mempool?network=${net}`).catch(() => null);
+  if (!res?.ok) {
+    kv('#sm-facts', [['Status', 'Sealed mempool unreachable']]);
+    return;
+  }
   sealedInfo = await res.json() as SealedInfo;
-  $('#sealed-mempool-id').textContent = sealedInfo.mempoolId;
-  renderSealed();
+  const rpcUrl = net === 'devnet' ? (isPublic ? `${location.origin}/rpc` : 'https://129-212-188-106.sslip.io/rpc') : 'http://127.0.0.1:14347/rpc';
+  kv('#sm-facts', [
+    ['Mempool ID', el('code', '', sealedInfo.mempoolId)],
+    ['Rules', link('Published rules document ↗', RULES_DOC)],
+    ['Network', net === 'devnet' ? 'Live devnet (chain 1337)' : 'Local chain'],
+    ['Public RPC', el('code', '', rpcUrl)],
+    ['Orders waiting', String(sealedInfo.tickets ?? 0)],
+    ['Batch pool (hook)', sealedInfo.batchHook ? el('code', '', short(sealedInfo.batchHook)) : '—'],
+  ]);
+  $('#sm-rules').replaceChildren(...(sealedInfo.revealRules ?? []).map((r) => {
+    const row = el('div', 'check-row pass');
+    row.append(el('span', 'dot'), el('span', '', `${r.id} · ${r.name}`), el('small', '', r.text));
+    return row;
+  }));
+  void loadSealedOrders();
+}
+
+async function loadSealedOrders() {
+  const net = isPublic || mode === 'institution' ? 'devnet' : String(flags.network);
+  const res = await fetch(`/api/admissions?mempool=sealed&network=${net}`).catch(() => null);
+  const table = $('#sm-table');
+  const empty = (text: string) => { const tr = el('tr'); const td = el('td', 'loading-row', text); td.setAttribute('colspan', '5'); tr.append(td); return tr; };
+  if (!res?.ok) return table.replaceChildren(empty('Sealed mempool unreachable.'));
+  const items = (await res.json() as Array<Admission & { kind?: string; nonce?: string; source?: string }>).filter((a) => a.kind !== 'envelope');
+  if (!items.length) return table.replaceChildren(empty('No sealed orders yet. Run a protected swap.'));
+  table.replaceChildren(...items.slice(0, 15).map((a) => {
+    const tr = el('tr', 'pick');
+    const passed = a.checks.filter((c) => c.verdict === 'pass').length;
+    tr.append(el('td', '', ago(a.at)), el('td', 'mono', short(a.envelopeId)), el('td', '', a.nonce ? `#${a.nonce}` : '—'), el('td', '', a.source === 'gossip' ? 'another node' : 'a wallet'), el('td', a.outcome === 'accepted' ? 'out-included' : 'out-rejected', `${passed}/${a.checks.length} ✓`));
+    tr.addEventListener('click', () => { $<HTMLInputElement>('#ticket-input').value = a.envelopeId ?? ''; void checkTicket(); });
+    return tr;
+  }));
+}
+
+async function checkTicket() {
+  const id = $<HTMLInputElement>('#ticket-input').value.trim();
+  if (!/^0x[0-9a-fA-F]+$/.test(id)) return kv('#ticket-result', [['Ticket', 'Paste a ticket ID starting with 0x']]);
+  const net = isPublic || mode === 'institution' ? 'devnet' : String(flags.network);
+  const res = await fetch(`/api/ticket/${id}?network=${net}`).catch(() => null);
+  const t = res?.ok ? await res.json() as { error?: string; status?: string; batchRound?: string; revealTx?: string; note?: string; round?: number } : { error: 'node unreachable' };
+  if (t.error) return kv('#ticket-result', [['Ticket', short(id)], ['Result', t.error.includes('no ticket') ? 'This node does not know this ticket (it may predate a restart, or belong to another network).' : t.error]]);
+  const status: Record<string, string> = { locked: 'Sealed: waiting for its drand round', revealed: 'Revealed on chain', failed: 'Reveal failed', expired: 'Expired' };
+  kv('#ticket-result', [
+    ['Ticket', short(id)],
+    ['Status', status[t.status ?? ''] ?? t.status ?? '—'],
+    ['Batch', t.batchRound ? `#${t.batchRound}` : '—'],
+    ['Reveal tx', t.revealTx ? el('code', '', short(t.revealTx)) : '—'],
+    ...(t.note ? [['Note', t.note] as [string, string]] : []),
+  ]);
 }
 
 async function loadAdmissions() {
-  const sealed = mempoolView === 'sealed';
-  const res = await fetch(sealed ? `/api/admissions?mempool=sealed&network=${flags.network}` : `/api/admissions?network=${flags.network}`).catch(() => null);
+  const net = isPublic || mode === 'institution' ? 'devnet' : String(flags.network);
+  const res = await fetch(`/api/admissions?network=${net}`).catch(() => null);
   const table = $('#admission-table');
-  $('#admission-key').textContent = sealed ? 'Envelope' : 'Tx';
-  $('#checks-net').textContent = sealed ? `LEANSEAL SEALED MEMPOOL · ${String(flags.network).toUpperCase()}` : `ALT MEMPOOL · ${String(flags.network).toUpperCase()}`;
-  $('#mempool-id').textContent = sealed && sealedInfo
-    ? `mempool id ${sealedInfo.mempoolId} · ${sealedInfo.rules.length} SEAL rules · ${sealedInfo.pending} pending`
-    : 'the standard ERC-8421 rule set: global checks, then per entity for each validation frame';
+  $('#checks-net').textContent = `ALT MEMPOOL · ERC-8421 · ${net === 'devnet' ? 'LIVE DEVNET' : 'LOCAL'}`;
   if (!res?.ok) {
-    table.replaceChildren(el('tr', 'loading-row', 'Mempool unreachable.'));
+    const tr = el('tr'); const td = el('td', 'loading-row', 'Alt mempool unreachable.'); td.setAttribute('colspan', '3'); tr.append(td);
+    table.replaceChildren(tr);
     return;
   }
   const items = await res.json() as Admission[];
@@ -820,20 +888,21 @@ async function loadAdmissions() {
     $$('#admission-table tr').forEach((row) => row.classList.remove('on'));
     tr?.classList.add('on');
     renderChecks(a);
-    if (a.txHash && !sealed) void loadEvents(a.txHash);
-    else $('#event-list').replaceChildren();
+    if (a.txHash) void loadEvents(a.txHash, net);
+    else $('#event-list').textContent = '';
   };
   const rows = items.map((a) => {
     const key = keyOf(a);
     const tr = el('tr', `pick${key === selectedTx ? ' on' : ''}`);
-    tr.append(el('td', '', ago(a.at)), el('td', 'mono', key.startsWith('0x') ? short(key) : key), el('td', 'mono', short(a.sender)), el('td', `out-${a.outcome}`, a.outcome));
+    const passed = a.checks.filter((c) => c.verdict === 'pass').length;
+    tr.append(el('td', '', ago(a.at)), el('td', 'mono', key.startsWith('0x') ? short(key) : key), el('td', `out-${a.outcome}`, `${a.outcome === 'included' ? 'Admitted' : a.outcome} · ${passed}/${a.checks.length}`));
     tr.addEventListener('click', () => select(a, tr));
     return tr;
   });
   if (!rows.length) {
     const tr = el('tr');
-    const td = el('td', 'loading-row', sealed ? 'No envelopes yet. Run a sealed swap.' : 'No admissions yet.');
-    td.setAttribute('colspan', '4');
+    const td = el('td', 'loading-row', 'No transactions yet.');
+    td.setAttribute('colspan', '3');
     tr.append(td);
     rows.push(tr);
   }
@@ -841,34 +910,39 @@ async function loadAdmissions() {
   if (items.length && !items.some((a) => keyOf(a) === selectedTx)) select(items[0], rows[0]);
 }
 
-function renderChecks(a: Admission) {
-  const key = keyOf(a);
-  $('#check-title').textContent = `${a.outcome === 'included' ? 'Admitted' : a.outcome} · ${key.startsWith('0x') ? short(key) : key}`;
-  const passed = a.checks.filter((c) => c.verdict === 'pass').length;
-  $('#check-count').textContent = `${passed}/${a.checks.length} passed`;
-  $('#check-list').replaceChildren(...a.checks.map((c) => {
-    const row = el('div', `check-row ${c.verdict}`);
-    const scope = c.entity ? `${c.entity} · frame ${c.frameIndex}` : c.name ? 'sealed' : 'global';
-    const text = c.detail ?? [...(sealedInfo?.rules ?? []), ...(sealedInfo?.revealRules ?? [])].find((r) => r.id === c.rule)?.text;
-    row.append(el('span', 'dot'), el('span', '', c.name ? `${c.rule} · ${c.name}` : c.rule), el('em', '', `${c.verdict.toUpperCase()} · ${scope}`));
-    if (text) row.append(el('small', '', text));
-    return row;
-  }));
+function checkRow(c: Check) {
+  const row = el('div', `check-row ${c.verdict}`);
+  const scope = c.entity ? `${c.entity} · frame ${c.frameIndex}` : 'whole transaction';
+  row.append(el('span', 'dot'), el('span', '', c.name ? `${c.rule} · ${c.name}` : c.rule), el('em', '', `${c.verdict.toUpperCase()} · ${scope}`));
+  if (c.detail) row.append(el('small', '', c.detail));
+  return row;
 }
 
-async function loadEvents(hash: string) {
-  const res = await fetch(`/api/tx/${hash}?network=${flags.network}`).catch(() => null);
-  const list = $('#event-list');
+function renderChecks(a: Admission) {
+  const key = keyOf(a);
+  const passed = a.checks.filter((c) => c.verdict === 'pass');
+  const other = a.checks.filter((c) => c.verdict !== 'pass');
+  $('#check-title').textContent = `${a.outcome === 'included' ? 'Admitted' : a.outcome[0].toUpperCase() + a.outcome.slice(1)} · ${key.startsWith('0x') ? short(key) : key}`;
+  const summary = $('#check-summary');
+  summary.className = `check-summary ${other.some((c) => c.verdict === 'fail') ? 'bad' : 'good'}`;
+  summary.textContent = other.length
+    ? `${passed.length}/${a.checks.length} rules passed. ${other.length} need${other.length === 1 ? 's' : ''} attention:`
+    : `✓ All ${a.checks.length} ERC-8421 rules passed.`;
+  $('#check-failed').replaceChildren(...other.map(checkRow));
+  $('#check-all').hidden = a.checks.length === 0;
+  $('#check-all-label').textContent = `Show all ${a.checks.length} checks`;
+  $('#check-list').replaceChildren(...a.checks.map(checkRow));
+}
+
+async function loadEvents(hash: string, net: string) {
+  const res = await fetch(`/api/tx/${hash}?network=${net}`).catch(() => null);
+  const line = $('#event-list');
   if (!res?.ok) {
-    list.replaceChildren();
+    line.textContent = '';
     return;
   }
   const { events } = await res.json() as { events: TxEvent[] };
-  list.replaceChildren(el('span', 'eyebrow', 'LIFECYCLE'), ...events.map((e) => {
-    const row = el('div', 'check-row pass');
-    row.append(el('span', 'dot'), el('span', '', e.kind), el('em', '', `${e.status} · ${new Date(e.at).toLocaleTimeString()}`));
-    return row;
-  }));
+  line.textContent = events.length ? `Lifecycle: ${events.map((e) => e.kind === 'statusChanged' ? e.status : e.kind).filter((v, i, arr) => arr.indexOf(v) === i).join(' → ')}` : '';
 }
 
 async function init() {
@@ -905,12 +979,9 @@ async function init() {
   });
   $$<HTMLButtonElement>('#net-switch button').forEach((b) => b.addEventListener('click', () => setFlags({ ...flags, network: b.dataset.net! })));
   $('#reset-flags').addEventListener('click', () => setFlags({ ...defaults }));
-  $$<HTMLButtonElement>('#mempool-switch button').forEach((b) => b.addEventListener('click', () => {
-    mempoolView = b.dataset.mempool === 'sealed' ? 'sealed' : 'standard';
-    $$('#mempool-switch button').forEach((x) => x.classList.toggle('on', x === b));
-    selectedTx = '';
-    void loadAdmissions();
-  }));
+  $('#ticket-check').addEventListener('click', () => { void checkTicket(); });
+  $<HTMLInputElement>('#ticket-input').addEventListener('keydown', (ev) => { if (ev.key === 'Enter') void checkTicket(); });
+  $('#sm-refresh').addEventListener('click', () => { void loadSealedInfo(); });
   const res = await fetch('/api/flags').catch(() => null);
   if (!res?.ok) {
     showMessage('Cannot reach the LeanSeal API. Start it with: cd demo && npx --prefix ../workshop tsx server.ts');
@@ -932,7 +1003,10 @@ async function init() {
   applyMode(mode);
   showLatestRun();
   setInterval(() => { void loadStatus(); if (mode === 'institution' && !running) void loadVault(); }, 10_000);
-  setInterval(() => { if (!$<HTMLElement>('[data-panel="checks"]').hidden) void loadAdmissions(); }, 15_000);
+  setInterval(() => {
+    if (!$<HTMLElement>('[data-panel="checks"]').hidden) void loadAdmissions();
+    if (!$<HTMLElement>('[data-panel="sealed"]').hidden) void loadSealedOrders();
+  }, 15_000);
 }
 
 void init();

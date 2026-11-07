@@ -1,13 +1,13 @@
-<section class="tab-panel" data-panel="sealed" aria-label="Sealed lane" hidden>
-          <div class="workflow-grid">
-            <article class="surface workflow-card"><span class="workflow-number">01</span><span class="eyebrow">SIGN</span><h3>PQ signature</h3><strong data-s="sign">—</strong><p>Alice signs the frame transaction with her post-quantum key. The signed tx never leaves her machine in the clear.</p></article>
-            <article class="surface workflow-card"><span class="workflow-number">02</span><span class="eyebrow">SEAL</span><h3>Two locks</h3><strong data-s="round">—</strong><p>Lock A: ML-KEM-768 to the chosen builder. Lock B: a drand time lock that opens for everyone at the deadline round.</p></article>
-            <article class="surface workflow-card"><span class="workflow-number">03</span><span class="eyebrow">DOOR CHECKS</span><h3>Sealed mempool</h3><strong data-s="door">—</strong><p>The alt mempool checks what it can without opening the box: the SEAL rules, from shape and builders to stake, nonce, balance and rate limits.</p></article>
-            <article class="surface workflow-card violet-surface"><span class="workflow-number">04</span><span class="eyebrow">EXECUTION</span><h3>Opened &amp; included</h3><strong data-s="opened">—</strong><p>The builder opens it and relays it privately; if it doesn't, the drand lock opens it at the deadline.</p></article>
+<section class="tab-panel" data-panel="sealed" aria-label="Sealed mempool" hidden>
+          <div class="simple-grid">
+            <article class="surface simple-card"><span class="eyebrow">ERC-8421 CUSTOM MEMPOOL</span><h3>What this node runs</h3><dl class="kv" id="sm-facts"><dt>Mempool ID</dt><dd>loading…</dd></dl></article>
+            <article class="surface simple-card"><span class="eyebrow">CHECK A SEALED ORDER</span><h3>Look up a ticket</h3>
+              <div class="order-amount"><input id="ticket-input" type="text" placeholder="0x… ticket ID" spellcheck="false" /><button type="button" class="quiet-button outline" id="ticket-check">Check</button></div>
+              <dl class="kv" id="ticket-result"><dt>Tip</dt><dd>Click an order below, or paste a ticket ID from a run's Transactions tab.</dd></dl>
+            </article>
           </div>
-          <div class="workflow-note"><span>SEALED MEMPOOL</span><code id="sealed-mempool-id">loading…</code><span>inside the ERC-8421 sidecar</span><span id="sealed-last">no sealed run yet</span></div>
-          <div class="checks-grid" style="margin-top:18px">
-            <article class="surface checks-surface"><span class="eyebrow">SEAL RULES · LAST SEALED RUN</span><h3>Door checks</h3><div class="check-list door-list" id="door-list"></div></article>
-            <article class="surface checks-surface"><span class="eyebrow">HISTORY</span><h3>Sealed envelopes</h3><div class="intent-table-wrap"><table><thead><tr><th>Envelope</th><th>Status</th><th>Opened by</th><th>Loss</th></tr></thead><tbody id="envelope-table"><tr><td colspan="4" class="loading-row">No sealed runs yet.</td></tr></tbody></table></div></article>
-          </div>
+          <article class="surface simple-card" style="margin-top:18px"><div class="surface-heading"><div><span class="eyebrow">LATEST</span><h3>Sealed orders received</h3></div><button class="quiet-button" id="sm-refresh">Refresh ↻</button></div>
+            <div class="intent-table-wrap"><table><thead><tr><th>When</th><th>Ticket</th><th>Batch</th><th>From</th><th>Checks</th></tr></thead><tbody id="sm-table"><tr><td colspan="5" class="loading-row">Loading…</td></tr></tbody></table></div>
+          </article>
+          <details class="surface simple-card rules-box" style="margin-top:18px"><summary>The rules every sealed order must pass</summary><div class="check-list" id="sm-rules"></div></details>
         </section>
