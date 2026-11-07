@@ -11,7 +11,7 @@ import { loadUni, readPool } from "../uni/setup_pool.js";
 import { quoteExactIn } from "../uni/swap.js";
 import { loadBatch } from "./setup_batch_pool.js";
 import { latestRound, quicknet } from "../../../sealing-kit/src/drand.js";
-import { lockTicket } from "../../../leanseal-node/src/reveal.js";
+import { commitmentOf, lockTicket } from "../../../leanseal-node/src/reveal.js";
 
 const AMOUNT_IN = BigInt(process.env.BATCH_AMOUNT_IN ?? "100000000000000");
 const DEPOSIT = BigInt(process.env.BATCH_DEPOSIT ?? "500000000000000");
@@ -22,7 +22,6 @@ const FEE_PIPS = 3000n;
 const Q96 = 2n ** 96n;
 const BLOCK_SECONDS = 6;
 const DRAND_SECONDS = 3;
-const COMMIT_ATTEMPTS = 3;
 
 const HOOK_ABI = parseAbi([
   "function deposit() payable",
@@ -58,8 +57,7 @@ async function main() {
   const bond = BigInt(batch.bond!);
   const account = JSON.parse(readFileSync(PQ_STATE_FILE, "utf8")).account as Address;
 
-  const bonds = bond * BigInt(COMMIT_ATTEMPTS);
-  const needEth = SELL ? bonds : AMOUNT_IN + bonds;
+  const needEth = SELL ? bond : AMOUNT_IN + bond;
   const haveEth = await read<bigint>(hook, "ethOf", [account]);
   if (haveEth < needEth) {
     const shortfall = needEth - haveEth;
@@ -88,25 +86,19 @@ async function main() {
   console.log(JSON.stringify({ account, side: SELL ? "sell" : "buy", amountInWei: AMOUNT_IN.toString(), localQuote: quote.toString(), minOut: minOut.toString() }));
 
   const drand = quicknet();
-  let batchRound = 0n;
-  let index = -1;
-  let ticket: Awaited<ReturnType<typeof lockTicket>> | undefined;
-  let round = 0;
-  for (let attempt = 1; attempt <= COMMIT_ATTEMPTS && index < 0; attempt++) {
-    while ((await blockNumber()) % roundBlocks !== 0n) await sleep(500);
-    batchRound = (await blockNumber()) / roundBlocks;
-    const order = { zeroForOne: !SELL, amountIn: AMOUNT_IN.toString(), minOut: minOut.toString(), salt: toHex(randomBytes(32)) };
-    const revealStartBlock = (batchRound + 1n) * roundBlocks;
-    const etaSeconds = Number(revealStartBlock - (await blockNumber())) * BLOCK_SECONDS + BLOCK_SECONDS;
-    round = (await latestRound(drand)) + Math.ceil(etaSeconds / DRAND_SECONDS) + 1;
-    ticket = await lockTicket({ chainId: loadConfig().chainId, hook, user: account, batchRound: batchRound.toString(), round }, order, drand);
-    log(`order sealed: commitment ${ticket.commitment} for batch ${batchRound}; reveal locked to drand round ${round}`);
-    await sendPq(account, hook, 0n, encodeFunctionData({ abi: HOOK_ABI, functionName: "commit", args: [ticket.commitment] }), "commit (only the hash goes on chain)");
-    const orders = await read<Array<{ commitment: Hex }>>(hook, "ordersOf", [batchRound]);
-    index = orders.findIndex((o) => o.commitment.toLowerCase() === ticket!.commitment.toLowerCase());
-    if (index < 0) log(`commit landed after batch ${batchRound} closed; it can never be revealed (its ${bond} wei bond goes to the settler). Retrying (${attempt}/${COMMIT_ATTEMPTS})`);
-  }
-  if (index < 0 || !ticket) throw new Error(`commit missed its batch ${COMMIT_ATTEMPTS} times`);
+  const order = { zeroForOne: !SELL, amountIn: AMOUNT_IN.toString(), minOut: minOut.toString(), salt: toHex(randomBytes(32)) };
+  const commitment = commitmentOf(hook, account, order);
+  log(`order sealed: commitment ${commitment} (valid in whichever batch the commit lands)`);
+  const commitHash = await sendPq(account, hook, 0n, encodeFunctionData({ abi: HOOK_ABI, functionName: "commit", args: [commitment] }), "commit (only the hash goes on chain)");
+  const minedBlock = BigInt((await rpc(ETHREX_URL, "eth_getTransactionReceipt", [commitHash])).blockNumber);
+  const batchRound = minedBlock / roundBlocks;
+  const index = (await read<Array<{ commitment: Hex }>>(hook, "ordersOf", [batchRound])).findIndex((o) => o.commitment.toLowerCase() === commitment.toLowerCase());
+  if (index < 0) throw new Error(`commit ${commitHash} mined in block ${minedBlock} but not found in batch ${batchRound}`);
+  const revealStartBlock = (batchRound + 1n) * roundBlocks;
+  const etaSeconds = Number(revealStartBlock - (await blockNumber())) * BLOCK_SECONDS + BLOCK_SECONDS;
+  const round = (await latestRound(drand)) + Math.ceil(Math.max(etaSeconds, BLOCK_SECONDS) / DRAND_SECONDS) + 1;
+  const ticket = await lockTicket({ chainId: loadConfig().chainId, hook, user: account, batchRound: batchRound.toString(), round }, order, drand);
+  log(`commit is order #${index} of batch ${batchRound}; reveal ticket locked to drand round ${round}`);
 
   const { id, gossipedTo } = await rpc(NODE_URL, "leanseal_sendRevealTicket", [ticket]);
   log(`reveal ticket ${id} sent to the sealed mempool, gossiped to ${gossipedTo} peer(s); nodes reveal it at drand round ${round}`);

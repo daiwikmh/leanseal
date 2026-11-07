@@ -76,10 +76,10 @@ export const REVEAL_RULES = [
   { id: "REV-060", name: "rate", text: "The sending peer is under peerTicketsPerMinute", rule: "peer", re: /./ },
 ] as const;
 
-export function commitmentOf(hook: Address, user: Address, batchRound: bigint, o: OrderPlaintext): Hex {
+export function commitmentOf(hook: Address, user: Address, o: OrderPlaintext): Hex {
   return keccak256(encodeAbiParameters(
-    [{ type: "address" }, { type: "address" }, { type: "uint256" }, { type: "bool" }, { type: "uint128" }, { type: "uint128" }, { type: "bytes32" }],
-    [hook, user, batchRound, o.zeroForOne, BigInt(o.amountIn), BigInt(o.minOut), o.salt],
+    [{ type: "address" }, { type: "address" }, { type: "bool" }, { type: "uint128" }, { type: "uint128" }, { type: "bytes32" }],
+    [hook, user, o.zeroForOne, BigInt(o.amountIn), BigInt(o.minOut), o.salt],
   ));
 }
 
@@ -91,7 +91,7 @@ export async function lockTicket(
   drand: ChainClient,
 ): Promise<RevealTicket> {
   const lock = await timelockSeal(base.round, new TextEncoder().encode(JSON.stringify(order)), drand);
-  return { version: 1, kind: "batch-reveal", ...base, commitment: commitmentOf(base.hook, base.user, BigInt(base.batchRound), order), lock };
+  return { version: 1, kind: "batch-reveal", ...base, commitment: commitmentOf(base.hook, base.user, order), lock };
 }
 
 export async function openTicket(t: RevealTicket, drand: ChainClient): Promise<OrderPlaintext> {
@@ -171,7 +171,7 @@ export class RevealDesk {
       return;
     }
     const batchRound = BigInt(t.batchRound);
-    if (commitmentOf(t.hook, t.user, batchRound, order).toLowerCase() !== t.commitment.toLowerCase()) {
+    if (commitmentOf(t.hook, t.user, order).toLowerCase() !== t.commitment.toLowerCase()) {
       Object.assign(e, { status: "junk", note: "opened order does not match the commitment" });
       return;
     }

@@ -8,7 +8,7 @@ const HOOK = "0x3abf5468ca1b8d2e1bfd0aa90b97cd016eb6c080" as Address;
 const ALICE = "0x42def1c5b6e5679e64f243e7767f27f8132b695a" as Address;
 const ORDER: OrderPlaintext = { zeroForOne: true, amountIn: "100000000000000", minOut: "1", salt: `0x${"11".repeat(32)}` };
 const BATCH = 980n;
-const COMMITMENT = commitmentOf(HOOK, ALICE, BATCH, ORDER);
+const COMMITMENT = commitmentOf(HOOK, ALICE, ORDER);
 
 class Clock {
   constructor(public round: number) {}

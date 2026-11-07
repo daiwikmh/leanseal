@@ -8,6 +8,7 @@ type OptionState = Record<string, Array<{ value: FlagValue; ok: boolean; reason:
 
 type Run = {
   id: number;
+  transferTo?: string;
   order?: { side: 'buy' | 'sell'; amountWei: string };
   at: number;
   flags: Flags;
@@ -283,11 +284,19 @@ function renderPresets() {
 
 const LANE_TEXT: Record<string, string> = { public: 'Public mempool', sealed: 'Encrypted, then public', batch: 'Sealed mempool → batch auction' };
 
+const DEMO_RECIPIENT = '0x8943545177806ED17B9F23F0a21ee5948eCaa776';
+
+function transferTarget(): string {
+  const v = (document.querySelector<HTMLInputElement>('#transfer-to')?.value ?? '').trim();
+  return /^0x[0-9a-fA-F]{40}$/.test(v) ? v : '';
+}
+
 function renderSummary() {
+  $('#transfer-to-row').hidden = flags.action !== 'transfer';
   const current = presetFor(flags);
   $('#scenario-text').textContent = current ? presetText(current) : 'Your own mix of settings.';
   const facts: Array<[string, string]> = [
-    ['Route', flags.action === 'swap' ? LANE_TEXT[String(flags.lane)] ?? String(flags.lane) : 'Send 1 gwei'],
+    ['Route', flags.action === 'swap' ? LANE_TEXT[String(flags.lane)] ?? String(flags.lane) : `Send 1 wei to ${transferTarget() ? short(transferTarget()) : 'our demo recipient'}`],
     ['Wallet', `${flags.wallet === 'passkey' ? (mode === 'institution' ? 'Desk operator (passkey)' : 'Your passkey') : 'Demo'} · ${flags.scheme === 'lss' ? 'leanSphincs-s' : 'SHA2'}`],
     ['Gas', flags.gas === 'sponsor' ? 'Free (sponsor pays)' : 'Wallet pays'],
   ];
@@ -437,7 +446,10 @@ function setRunEnabled(on: boolean) {
 }
 
 async function startRun() {
-  const res = await fetch('/api/run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(flags) });
+  const typed = $<HTMLInputElement>('#transfer-to').value.trim();
+  if (flags.action === 'transfer' && typed && !transferTarget()) return showMessage('The recipient must be a 0x… address with 40 hex characters.');
+  const payload = flags.action === 'transfer' && transferTarget() ? { ...flags, transferTo: transferTarget() } : flags;
+  const res = await fetch('/api/run', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(payload) });
   if (res.status === 202) return;
   const body = await res.json().catch(() => ({ error: `HTTP ${res.status}` })) as { error: string };
   showMessage(body.error);
@@ -648,7 +660,7 @@ function verdictText(run: Run) {
     const got = run.received && run.received !== '0' ? (run.order.side === 'sell' ? eth(run.received) : tusd(run.received)) : '—';
     return `${run.order.side === 'sell' ? 'Sold' : 'Bought with'} ${amount} → ${got} in batch ${run.batch?.round ?? '?'}, at the batch's one price (${run.lossPct?.toFixed(3) ?? '0'}% from the quote). Proceeds are in your pool vault.`;
   }
-  if (run.flags.action === 'transfer') return `Mined in block ${run.block}.${verify}`;
+  if (run.flags.action === 'transfer') return `Sent 1 wei to ${short(run.transferTo ?? DEMO_RECIPIENT)}, mined in block ${run.block}. The wallet's post-quantum signature was verified on chain.${verify}`;
   if (run.flags.lane === 'batch' && run.batch?.refunded) return `Refunded: by the time batch ${run.batch.round ?? '?'} settled, the price had moved past your ${Number(run.flags.slippageBps) / 100}% limit, so the pool gave your money back instead of filling at a worse price. Nothing was lost.`;
   if (run.flags.lane === 'batch') {
     const blocked = run.batch?.frontRunsBlocked ? ` The bot saw the order only after it was revealed and tried to front-run ${run.batch.frontRunsBlocked}×: ${run.batch.blockedReason}.` : '';
@@ -676,6 +688,10 @@ function connectEvents() {
       $$('[data-r]').forEach((n) => { n.textContent = '…'; });
       $('#run-state').textContent = e.mode === 'onboard' ? `run #${e.runId} · create wallet` : `run #${e.runId} · ${e.flags.action} · ${e.flags.lane}`;
       logLine('sys', `flags: ${schema.map((d) => `${d.key}=${optionLabel(d.key, e.flags[d.key])}`).join('  ')}`);
+    } else if (e.type === 'progress') {
+      if (e.quote) $('[data-r="quote"]').textContent = tusd(e.quote);
+      if (e.gasUsed) $('[data-r="gas"]').textContent = Number(e.gasUsed).toLocaleString();
+      if (e.block) $('#run-meta').textContent = `commit mined in block ${Number(e.block).toLocaleString()} · waiting for the batch`;
     } else if (e.type === 'line') {
       if (e.line.trim().startsWith('{')) return;
       logLine(e.stream === 'alice' ? 'alice' : 'bot', `${e.stream === 'alice' ? 'ALICE ' : 'BOT   '} ${e.line}`);
@@ -966,6 +982,7 @@ async function init() {
   $<HTMLInputElement>('#order-amount').addEventListener('input', () => renderOrder());
   $('#order-max').addEventListener('click', () => { $<HTMLInputElement>('#order-amount').value = fromWei(maxAmount()); renderOrder(); });
   $('#order-submit').addEventListener('click', () => submitOrder());
+  $<HTMLInputElement>('#transfer-to').addEventListener('input', () => renderSummary());
   $('#faucet-btn').addEventListener('click', () => { void postAction('/api/faucet?network=devnet'); });
   $('#withdraw-btn').addEventListener('click', () => { void postAction('/api/withdraw?network=devnet'); });
   const dialog = $<HTMLDialogElement>('#advanced-dialog');

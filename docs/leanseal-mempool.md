@@ -71,7 +71,7 @@ These depend on the node's own pool and the peer that sent the envelope, so peer
 Version 3 adds a second kind of message: a **reveal ticket** for a Uniswap v4 pool whose hook (`SealedPoolHook`) only trades in batches.
 
 **The pool.**
-- Users deposit into the hook's vault, then commit only `keccak256(hook, user, round, zeroForOne, amountIn, minOut, salt)` for the current batch round (rounds are counted in blocks).
+- Users deposit into the hook's vault, then commit only `keccak256(hook, user, zeroForOne, amountIn, minOut, salt)`. The commit is recorded in whichever batch round it lands in (rounds are counted in blocks); the hash does not depend on the round, so a slow inclusion never orphans an order.
 - After the round closes, the order is revealed with `reveal()`, which anyone holding the preimage may call. After the reveal window, `settle()` (callable by anyone) nets buys against sells at the pool price, swaps the remainder once, and gives every order on a side the same price. Orders whose `minOut` the batch price misses are refunded.
 - The hook's `beforeSwap` rejects every other swap, so nothing can trade between a reveal and its settlement.
 

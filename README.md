@@ -111,7 +111,7 @@ The public half of a swap (a hash) goes through the standard alt mempool; the pr
 - Code: [`SealedPoolHook.sol`](contracts/src/SealedPoolHook.sol) · [tests](contracts/test/SealedPoolHook.t.sol) · [`batch_swap.ts`](workshop/src/batch/batch_swap.ts) · design: [`uniswap-use-description.md`](uniswap-use-description.md)
 
 ### Sealed mempool (custom ERC-8421 mempool)
-- Published rules; the mempool ID is the IPFS CID of the [rules document](docs/leanseal-mempool.md): `QmSjNQxct8kRXMYKSsdefPsi3AFBHdSj3QjQtanS6bwgSc`.
+- Published rules; the mempool ID is the IPFS CID of the [rules document](docs/leanseal-mempool.md): `QmNoJa3eF3b9K9Wva1gYrEP6WquKThfxxY9mfqJa3LWYbb`.
 - Its own gossip topic between nodes; every ticket gets a pass/fail report per rule.
 - Keepers on each node reveal and settle at the drand round; a peer that got there first counts as done.
 - Code: [`mempool.ts`](leanseal-node/src/mempool.ts) · [`reveal.ts`](leanseal-node/src/reveal.ts) · [`hookChain.ts`](leanseal-node/src/hookChain.ts) · drand timelock: [`envelope.ts`](sealing-kit/src/envelope.ts)

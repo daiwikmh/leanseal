@@ -41,7 +41,7 @@ const DEFAULT_FLAGS: Flags = { network: "local", action: "swap", lane: "batch", 
 
 const FLAG_SCHEMA = [
   { key: "network", label: "Network", options: ["local", "devnet"], help: "Our local chain or the public hackathon devnet." },
-  { key: "action", label: "Action", options: ["swap", "transfer"], help: "Swap 0.0001 ETH for tUSD, or send 1 gwei." },
+  { key: "action", label: "Action", options: ["swap", "transfer"], help: "Swap 0.0001 ETH for tUSD, or send 1 wei." },
   { key: "lane", label: "Lane", options: ["public", "sealed", "batch"], help: "Public: anyone can read the swap. Sealed: encrypted until a deadline. Batch: sealed orders filled together at one price." },
   { key: "scheme", label: "Signature scheme", options: ["sha2", "lss"], help: "SHA2: the NIST standard, bigger, needs stake. lss: smaller and faster, no stake." },
   { key: "mevBot", label: "MEV bot", options: [true, false], help: "Run a bot that tries to trade around the swap." },
@@ -57,10 +57,12 @@ const PRESETS = [
   { id: "attack", group: "extra", title: "Unprotected swap (bot attack)", text: "A normal public swap. A bot trades around it and takes up to 3%.", flags: { network: "local", action: "swap", lane: "public", scheme: "sha2", mevBot: true, slippageBps: 300, verifyGas: 0, gas: "self", wallet: "demo" } },
   { id: "sealed", group: "extra", title: "Encrypted until a deadline", text: "Hidden until a deadline, then public. The bot can still react.", flags: { network: "local", action: "swap", lane: "sealed", scheme: "sha2", mevBot: true, slippageBps: 300, verifyGas: 0, gas: "self", wallet: "demo" } },
   { id: "batch", group: "extra", title: "Protected swap, NIST signature", text: "The protected swap signed with SLH-DSA SHA2. Needs a staked wallet.", flags: { network: "local", action: "swap", lane: "batch", scheme: "sha2", mevBot: true, slippageBps: 300, verifyGas: 0, gas: "self", wallet: "demo" } },
-  { id: "devnet", group: "extra", title: "Quantum-safe transfer", text: "Send 1 gwei from a quantum-safe wallet.", flags: { network: "devnet", action: "transfer", lane: "public", scheme: "lss", mevBot: false, slippageBps: 300, verifyGas: 0, gas: "self", wallet: "demo" } },
+  { id: "devnet", group: "extra", title: "Quantum-safe transfer", text: "Send 1 wei from a quantum-safe wallet to any address. The wallet verifies a post-quantum signature on chain.", flags: { network: "devnet", action: "transfer", lane: "public", scheme: "lss", mevBot: false, slippageBps: 300, verifyGas: 0, gas: "self", wallet: "demo" } },
 ] as const;
 
-const VISIBLE_PRESETS = PUBLIC ? PRESETS.filter((p) => p.id === "passkey").map((p) => ({ ...p, flags: { ...p.flags, network: "devnet" } })) : PRESETS;
+const PUBLIC_PRESET_IDS = ["passkey", "protected", "devnet"];
+const VISIBLE_PRESETS = PUBLIC ? PRESETS.filter((p) => PUBLIC_PRESET_IDS.includes(p.id)).map((p) => ({ ...p, flags: { ...p.flags, network: "devnet" } })) : PRESETS;
+const PUBLIC_DEFAULTS = VISIBLE_PRESETS.find((p) => p.id === "passkey")?.flags ?? DEFAULT_FLAGS;
 
 function optionReport(f: Flags, s: Session) {
   return Object.fromEntries(FLAG_SCHEMA.map((def) => [def.key, def.options.map((value) => {
@@ -125,7 +127,11 @@ function parseFlags(input: unknown): Flags {
 function flagProblems(f: Flags, s: Session): string[] {
   const problems: string[] = [];
   if (PUBLIC && f.network !== "devnet") problems.push("this public console runs on the live devnet only");
-  if (PUBLIC && f.wallet !== "passkey") problems.push("this public console uses passkey wallets only");
+  if (PUBLIC && f.wallet === "demo") {
+    const demoSwap = f.scheme === "lss" && f.lane === "batch" && f.action === "swap" && f.gas === "sponsor";
+    const demoTransfer = f.scheme === "lss" && f.action === "transfer";
+    if (!demoSwap && !demoTransfer) problems.push("on the live site the shared demo wallet runs the protected swap or the quantum-safe transfer; use your passkey wallet for anything else");
+  }
   if (f.network === "devnet" && f.action === "swap" && f.lane !== "batch") problems.push("on the devnet, swaps go through the batch auction: use lane = batch");
   if (f.network === "devnet" && f.lane === "sealed") problems.push("the sealed lane (LeanSeal node + builder) runs only on the local chain");
   if (f.action === "transfer" && f.lane === "sealed") problems.push("the sealed lane carries swaps: use action = swap");
@@ -249,6 +255,7 @@ type Order = { side: "buy" | "sell"; amountWei: string };
 
 type Run = {
   id: number;
+  transferTo?: string;
   session?: string;
   order?: Order;
   at: number;
@@ -350,10 +357,12 @@ function aliceArgs(f: Flags): string[] {
   return f.lane === "sealed" ? ["src/leanseal/sealed_swap.ts"] : ["src/uni/swap.ts", "send"];
 }
 
-async function experiment(f: Flags, s: Session, order?: Order): Promise<Run> {
-  const run: Run = { id: nextRunId++, session: s.id, at: Date.now(), flags: order ? { ...f, mevBot: false } : f, order, verifyGasLimit: verifyGasOf(f), ok: false, botTargeted: false };
+async function experiment(f: Flags, s: Session, order?: Order, transferTo?: string): Promise<Run> {
+  const run: Run = { id: nextRunId++, session: s.id, at: Date.now(), flags: order ? { ...f, mevBot: false } : f, order, transferTo: f.action === "transfer" ? transferTo : undefined, verifyGasLimit: verifyGasOf(f), ok: false, botTargeted: false };
   f = run.flags;
-  const env = order ? { ...envFor(f, s), BATCH_SIDE: order.side, BATCH_AMOUNT_IN: order.amountWei } : envFor(f, s);
+  const session = s;
+  const base = order ? { ...envFor(f, s), BATCH_SIDE: order.side, BATCH_AMOUNT_IN: order.amountWei } : envFor(f, s);
+  const env = run.transferTo ? { ...base, TRANSFER_TO: run.transferTo } : base;
   const account = walletOf(f, s)!.account;
   const wantBot = f.mevBot && f.action === "swap" && (f.network === "local" || f.lane === "batch");
   const useBot = wantBot && !(PUBLIC && deployerBusy);
@@ -392,7 +401,16 @@ async function experiment(f: Flags, s: Session, order?: Order): Promise<Run> {
   }
   const code = await runScript(s, "alice", aliceArgs(f), env, (line) => {
     const q = line.match(/"localQuote":"(\d+)"/) ?? line.match(/-> (\d+) tUSD/);
-    if (q) quote = BigInt(q[1]);
+    if (q) {
+      quote = BigInt(q[1]);
+      emitTo(session, { type: "progress", quote: quote.toString() });
+    }
+    const mined = line.match(/commit .*mined in block (\d+)/) ?? line.match(/^.*mined in block (\d+), status/);
+    if (mined && run.txHash) {
+      void rpc(NETS[f.network].rpc, "eth_getTransactionReceipt", [run.txHash]).then((rc) => {
+        if (rc) emitTo(session, { type: "progress", block: Number(BigInt(rc.blockNumber)), gasUsed: Number(BigInt(rc.gasUsed)) });
+      }).catch(() => undefined);
+    }
     const h = line.match(/ADMITTED by \S+: (0x[0-9a-f]{64})/) ?? line.match(/signed PQ tx (0x[0-9a-f]{64})/);
     if (h) run.txHash = h[1];
     const r = line.match(/REJECTED by \S+: (.*)$/);
@@ -549,7 +567,12 @@ async function passkeyStatus(s: Session) {
     if (!account) return { network: net, available: false };
     const code = await rpc(NETS[net].rpc, "eth_getCode", [account, "latest"]).catch(() => "0x");
     const balance = await rpc(NETS[net].rpc, "eth_getBalance", [account, "latest"]).then((b) => BigInt(b).toString()).catch(() => null);
-    return { network: net, available: true, account, created: code !== "0x", ethWei: balance };
+    const created = code !== "0x";
+    const stateFile = passkeyStateFile(net, s);
+    if (created && stateFile && !readJson<{ created?: boolean }>(stateFile)?.created) {
+      writeFileSync(stateFile, JSON.stringify({ account, created: true, adoptedFromChain: true }, null, 2));
+    }
+    return { network: net, available: true, account, created, ethWei: balance };
   }));
   return { unlocked: true, id: passkey.id, pkSeed: passkey.pkSeed, wallets };
 }
@@ -607,6 +630,8 @@ function startJob(job: () => Promise<Run>, flags: Flags, res: ServerResponse, s:
   json(res, 202, { started: true, flags });
 }
 
+let demoBusy = false;
+
 function parseOrder(input: unknown): Order | undefined | string {
   if (input === undefined || input === null) return undefined;
   const o = input as { side?: unknown; amountWei?: unknown };
@@ -618,13 +643,26 @@ function parseOrder(input: unknown): Order | undefined | string {
   return { side: o.side, amountWei: o.amountWei };
 }
 
-function start(f: Flags, res: ServerResponse, s: Session, orderInput?: unknown) {
+function start(f: Flags, res: ServerResponse, s: Session, orderInput?: unknown, toInput?: unknown) {
   const order = parseOrder(orderInput);
   if (typeof order === "string") return json(res, 400, { error: order });
+  if (toInput !== undefined && toInput !== "" && (typeof toInput !== "string" || !/^0x[0-9a-fA-F]{40}$/.test(toInput))) return json(res, 400, { error: "the recipient must be a 0x… address with 40 hex characters" });
+  const transferTo = typeof toInput === "string" && toInput ? toInput : undefined;
   const problems = flagProblems(f, s);
   if (order && (f.lane !== "batch" || f.action !== "swap")) problems.push("orders go through the batch auction: use lane = batch");
   if (problems.length) return json(res, 400, { error: problems.join("; "), problems });
-  startJob(() => experiment(f, s, order), f, res, s);
+  if (PUBLIC && f.wallet === "demo") {
+    if (demoBusy) return json(res, 429, { error: "the shared demo wallet is busy with another visitor; try again in a minute, or use your passkey wallet" });
+    return startJob(async () => {
+      demoBusy = true;
+      try {
+        return await experiment(f, s, order, transferTo);
+      } finally {
+        demoBusy = false;
+      }
+    }, f, res, s);
+  }
+  startJob(() => experiment(f, s, order, transferTo), f, res, s);
 }
 
 const SEL = { ethOf: "0x8fb08e2c", tokenOf: "0x42ec38e2", balanceOf: "0x70a08231", getSlot0: "0xc815641c", getLiquidity: "0xfa6793d5" };
@@ -724,7 +762,7 @@ createServer(async (req, res) => {
       req.on("close", () => { clearInterval(ping); s.clients.delete(res); });
       return;
     }
-    if (path === "/api/flags") return json(res, 200, { public: PUBLIC, defaults: PUBLIC ? VISIBLE_PRESETS[0].flags : DEFAULT_FLAGS, schema: FLAG_SCHEMA, presets: VISIBLE_PRESETS });
+    if (path === "/api/flags") return json(res, 200, { public: PUBLIC, defaults: PUBLIC ? PUBLIC_DEFAULTS : DEFAULT_FLAGS, schema: FLAG_SCHEMA, presets: VISIBLE_PRESETS });
     if (path === "/api/flags/check" && req.method === "POST") {
       const f = parseFlags(await readBody(req));
       return json(res, 200, { flags: f, problems: flagProblems(f, s), options: optionReport(f, s) });
@@ -747,11 +785,13 @@ createServer(async (req, res) => {
       const r = await rpc(NETS[net].sidecar, "skandha_explorer_getTransaction", [tx[1]]);
       return json(res, 200, { admission: r?.admission ?? null, events: r?.events ?? [], status: r?.entry?.status ?? null });
     }
+    const ticket = path.match(/^\/api\/ticket\/(0x[0-9a-fA-F]{1,128})$/);
+    if (ticket) return json(res, 200, await rpc(NETS[netParam].node!, "leanseal_ticketStatus", [ticket[1]]).catch((e: Error) => ({ error: e.message.replace(/^unknown: /, "") })));
     const env = path.match(/^\/api\/envelope\/(0x[0-9a-fA-F]+)$/);
     if (env) return json(res, 200, await rpc(NETS[netParam].node!, "leanseal_envelopeStatus", [env[1]]));
     if (path === "/api/run" && req.method === "POST") {
       const body = await readBody(req) as Record<string, unknown>;
-      return start(parseFlags(body), res, s, body.order);
+      return start(parseFlags(body), res, s, body.order, body.transferTo);
     }
     if (path === "/api/vault" && req.method === "GET") return json(res, 200, await vaultInfo(netParam, s));
     if (path === "/api/withdraw" && req.method === "POST") {

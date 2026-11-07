@@ -10,7 +10,7 @@
 | Repository | https://github.com/daiwikmh/leanseal |
 | Project overview | [README.md](README.md) |
 | Uniswap v4 design (PRD) | [uniswap-use-description.md](uniswap-use-description.md) |
-| Sealed-mempool rules | [docs/leanseal-mempool.md](docs/leanseal-mempool.md) (mempool ID `QmSjNQxct8kRXMYKSsdefPsi3AFBHdSj3QjQtanS6bwgSc`) |
+| Sealed-mempool rules | [docs/leanseal-mempool.md](docs/leanseal-mempool.md) (mempool ID `QmNoJa3eF3b9K9Wva1gYrEP6WquKThfxxY9mfqJa3LWYbb`) |
 
 ## Why it needs the alt mempool
 
@@ -32,7 +32,7 @@ All mined with status 1, checked on 2026-11-07.
 | Staked leanSphincs-s wallet, 200k verification budget | [0x578872ee…c805](https://explorer.altmempool.wtf/tx/0x578872eea2f4325f9d06a791a2d7c81d319bb08f12e184f0404da3723706c805?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc) | 2365 |
 | Staked leanSphincs-s wallet, 1M verification budget | [0xdf844822…19db](https://explorer.altmempool.wtf/tx/0xdf844822708d212cea3836715241887899d1bb47e34e22cf2a37d2d7b37d19db?node=https%3A%2F%2Faltmempool.forshtat.com%2Frpc) | 2370 |
 
-Devnet contracts: SealedPoolHook `0x22fDb32179D29d1f90a0Ef1810d2AeEcd8f94080` · Uniswap v4 PoolManager `0x6bF9Aa9c04fd001385742d61f6818C3236429848` · tUSD `0x5ed7367cbb2e9bc743e14ffc3fbd230c25c6059b` · wallet factory `0x42def1c5b6e5679e64f243e7767f27f8132b695a` · sponsor `0xe72458f41ce1d6791908c38db0b4c0f750be3736`.
+Devnet contracts: SealedPoolHook `0xc771Bd7DF953c1C38Ed452611fD3bcEb22c54080` · Uniswap v4 PoolManager `0x6bF9Aa9c04fd001385742d61f6818C3236429848` · tUSD `0x5ed7367cbb2e9bc743e14ffc3fbd230c25c6059b` · wallet factory `0x42def1c5b6e5679e64f243e7767f27f8132b695a` · sponsor `0xe72458f41ce1d6791908c38db0b4c0f750be3736`.
 
 ## Where the tech is used (code)
 

@@ -78,7 +78,7 @@ browser (quantum-safe key)              chain (devnet)                    our se
 ```
 
 1. **Deposit.** The user puts ETH (or tUSD) into the hook's vault, separately from the trade, so the deposit doesn't reveal the trade.
-2. **Commit.** The user's wallet sends `commit(keccak256(hook, user, round, zeroForOne, amountIn, minOut, salt))`. Only the hash goes on chain. Rounds are `block.number / 4`. The commit costs a bond (1 gwei here), which is returned on reveal.
+2. **Commit.** The user's wallet sends `commit(keccak256(hook, user, zeroForOne, amountIn, minOut, salt))`. Only the hash goes on chain. The order is recorded in whichever round (`block.number / 4`) the commit lands in; the hash does not depend on the round, so a slow inclusion cannot orphan it. The commit costs a bond (1 gwei here), which is returned on reveal.
 3. **Seal.** The browser encrypts the order to a future **drand** round (timelock encryption) and sends this "reveal ticket" to our sealed mempool. Nodes check it (rules `REV-010…060`) and share it over their own p2p topic.
 4. **Reveal.** When the round arrives, any node downloads that round's key, opens the ticket, checks it against the on-chain hash, and calls `reveal()`. Anyone holding the order may reveal it, the user included.
 5. **Settle.** After the 2-round reveal window, anyone calls `settle()`, which handles batches in strict queue order:
@@ -112,7 +112,7 @@ The client side of steps 1–3 and the wait for settlement is [`batch_swap.ts`](
 
 | Part | Role | Where |
 |---|---|---|
-| **Sealed mempool** (ERC-8421 custom mempool plugin) | Admits, holds and gossips reveal tickets; rules are published (mempool ID `QmSjNQxct8kRXMYKSsdefPsi3AFBHdSj3QjQtanS6bwgSc`) | [`mempool.ts`](leanseal-node/src/mempool.ts), [`reveal.ts`](leanseal-node/src/reveal.ts), [rules](docs/leanseal-mempool.md) |
+| **Sealed mempool** (ERC-8421 custom mempool plugin) | Admits, holds and gossips reveal tickets; rules are published (mempool ID `QmNoJa3eF3b9K9Wva1gYrEP6WquKThfxxY9mfqJa3LWYbb`) | [`mempool.ts`](leanseal-node/src/mempool.ts), [`reveal.ts`](leanseal-node/src/reveal.ts), [rules](docs/leanseal-mempool.md) |
 | **Keepers** | Each node calls `reveal()` and `settle()` from its own key; a lost race counts as success | [`hookChain.ts`](leanseal-node/src/hookChain.ts) |
 | **Patched alt-mempool node** | Admits the post-quantum commit (staked 1M budget, precompiles), hosts the plugin | [`customMempools.ts`](sidecar/packages/api/src/customMempools.ts), [`CustomMempoolGossip.ts`](sidecar/packages/executor/src/services/CustomMempoolGossip.ts), [`patches/`](patches) |
 | **Wallets** | Quantum-safe EIP-8141 accounts (SLH-DSA SHA2 or leanSphincs-s); passkey users get an lss key made in the browser; one-transaction signup; optional gas sponsor | [`LeanSealCloneAccount.sol`](contracts/src/LeanSealCloneAccount.sol), [`LeanSealFactory.sol`](contracts/src/LeanSealFactory.sol), [`onboard.ts`](workshop/src/onboard/onboard.ts), [`passkey.ts`](web/src/scripts/passkey.ts), [`lib.rs`](signer-lss-wasm/src/lib.rs) |
@@ -124,9 +124,9 @@ The client side of steps 1–3 and the wait for settlement is [`batch_swap.ts`](
 | | Local chain | Public devnet |
 |---|---|---|
 | PoolManager | `localnet/uni.local.json` | `0x6bF9Aa9c04fd001385742d61f6818C3236429848` (existing) |
-| SealedPoolHook | `0x3aBf5468CA1b8d2E1bfd0AA90B97Cd016eB6C080` | `0x22fDb32179D29d1f90a0Ef1810d2AeEcd8f94080` |
+| SealedPoolHook | `0x3aBf5468CA1b8d2E1bfd0AA90B97Cd016eB6C080` | `0xc771Bd7DF953c1C38Ed452611fD3bcEb22c54080` |
 | tUSD (test token) | `workshop/local.uni-state.json` | `0x5ed7367cbb2e9bc743e14ffc3fbd230c25c6059b` |
-| Liquidity | ~0.001 ETH | ~0.1 ETH + ~34.7 tUSD (topped up 2026-11-07) |
+| Liquidity | ~0.001 ETH | ~0.1 ETH + ~100 tUSD (topped up 2026-11-07) |
 | Live site | `localhost:4321` | [leanseal.vercel.app](https://leanseal.vercel.app/) (landing) · [console](https://129-212-188-106.sslip.io/dashboard) |
 
 ## 10. Measured results

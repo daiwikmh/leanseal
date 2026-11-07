@@ -86,12 +86,12 @@ contract SealedPoolHook {
         return block.number / roundBlocks;
     }
 
-    function commitmentOf(address user, uint256 round, bool zeroForOne, uint128 amountIn, uint128 minOut, bytes32 salt)
+    function commitmentOf(address user, bool zeroForOne, uint128 amountIn, uint128 minOut, bytes32 salt)
         public
         view
         returns (bytes32)
     {
-        return keccak256(abi.encode(address(this), user, round, zeroForOne, amountIn, minOut, salt));
+        return keccak256(abi.encode(address(this), user, zeroForOne, amountIn, minOut, salt));
     }
 
     function ordersOf(uint256 round) external view returns (Order[] memory) {
@@ -134,7 +134,7 @@ contract SealedPoolHook {
         require(cur > round && cur <= round + revealRounds, WrongPhase());
         Order storage o = orders[round][index];
         require(
-            !o.revealed && o.commitment == commitmentOf(o.user, round, zeroForOne, amountIn, minOut, salt), BadReveal()
+            !o.revealed && o.commitment == commitmentOf(o.user, zeroForOne, amountIn, minOut, salt), BadReveal()
         );
         ethOf[o.user] += bond;
         _debit(o.user, zeroForOne, amountIn);

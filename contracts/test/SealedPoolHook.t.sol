@@ -149,7 +149,7 @@ contract SealedPoolHookTest {
         private
         returns (uint256 round)
     {
-        bytes32 c = hook.commitmentOf(who, hook.currentRound(), zeroForOne, amountIn, minOut, salt);
+        bytes32 c = hook.commitmentOf(who, zeroForOne, amountIn, minOut, salt);
         vm.prank(who);
         (round,) = hook.commit(c);
     }
