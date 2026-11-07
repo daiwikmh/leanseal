@@ -123,7 +123,7 @@ async function main() {
 
   const body = mode === "stake"
     ? { to: cfg.stakingRegistry as Address, value: BigInt(cfg.stakeWei), data: encodeFunctionData({ abi: parseAbi(["function addStake(uint32)"]), functionName: "addStake", args: [86400] }), exec: 150_000n, state: 300_000n }
-    : { to: cfg.recipient as Address, value: 1n, data: "0x" as Hex, exec: 50_000n, state: 200_000n };
+    : { to: (process.env.TRANSFER_TO || cfg.recipient) as Address, value: 1n, data: "0x" as Hex, exec: 50_000n, state: 200_000n };
 
   const nonce = await accountNonce(s.account);
   const tx = buildTx(s.account, nonce, cfg.chainId, cfg.maxFeePerGasWei, body, BigInt(process.env.VERIFY_GAS ?? "400000"));
