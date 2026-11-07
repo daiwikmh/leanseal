@@ -1,5 +1,7 @@
 # Live alt mempool rejects precompile calls in validation frames (CALLING-040)
 
+> **Update:** fixed on the live devnet. On a re-test, the same staked SHA2 wallet transfer was admitted and mined: `0xeb569198ae239d241ea5630d82f20230180f89ca972a7fa1753963f03bc13d4c`, block 5463. Unstaked senders remain capped at 100k.
+
 **Where:** live devnet 1337. Both the miner (`https://altmempool.forshtat.com/rpc`) and the gateway (`https://altmempoolgateway.forshtat.com/rpc`) do this. Tested 2026-11-06, block ~2,370.
 
 ## Summary
