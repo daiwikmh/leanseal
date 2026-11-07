@@ -101,6 +101,7 @@ export async function openTicket(t: RevealTicket, drand: ChainClient): Promise<O
 /** Holds reveal tickets until their drand round, then reveals the orders and settles batches. */
 export class RevealDesk {
   readonly tickets = new Map<Hex, TicketEntry>();
+  lastKeeperError: { at: number; message: string } | null = null;
   private readonly peerTimes = new Map<string, number[]>();
 
   constructor(
@@ -149,7 +150,10 @@ export class RevealDesk {
       const latest = await latestRound(this.drand);
       for (const e of locked.filter((x) => x.ticket.round <= latest)) await this.release(e);
     }
-    await this.chain.settleIfDue().catch(() => null);
+    await this.chain.settleIfDue().catch((err: Error) => {
+      this.lastKeeperError = { at: this.now(), message: `settle: ${err.message}`.slice(0, 300) };
+      return null;
+    });
   }
 
   private async release(e: TicketEntry): Promise<void> {

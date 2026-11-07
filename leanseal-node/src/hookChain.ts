@@ -1,5 +1,5 @@
 import { readFileSync } from "node:fs";
-import { createPublicClient, createWalletClient, defineChain, http, parseAbi } from "viem";
+import { createPublicClient, createWalletClient, defineChain, encodeFunctionData, http, parseAbi } from "viem";
 import type { Address, Hex } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import type { HookChain, HookOrder, OrderPlaintext } from "./reveal.js";
@@ -26,6 +26,9 @@ export async function viemHookChain(rpcUrl: string, chainId: number, hook: Addre
     if (receipt.status !== "success") throw new Error(`tx ${hash} reverted`);
     return hash;
   };
+  let settling = false;
+  const settleDue = () =>
+    pub.simulateContract({ account, address: hook, abi: SEALED_POOL_ABI, functionName: "settle" }).then(() => true, () => false);
   return {
     revealRounds,
     currentRound: () => pub.readContract({ address: hook, abi: SEALED_POOL_ABI, functionName: "currentRound" }),
@@ -40,12 +43,19 @@ export async function viemHookChain(rpcUrl: string, chainId: number, hook: Addre
       return send({ ...request, gas: 300_000n } as Parameters<typeof wallet.writeContract>[0]);
     },
     settleIfDue: async () => {
+      if (settling) return null;
+      if (!(await settleDue())) return null;
+      settling = true;
       try {
-        await pub.simulateContract({ account, address: hook, abi: SEALED_POOL_ABI, functionName: "settle" });
-      } catch {
-        return null;
+        const data = encodeFunctionData({ abi: SEALED_POOL_ABI, functionName: "settle" });
+        const estimate = BigInt(await pub.request({ method: "eth_estimateGas", params: [{ from: account.address, to: hook, data }] }));
+        return await send({ account, chain, address: hook, abi: SEALED_POOL_ABI, functionName: "settle", gas: (estimate * 13n) / 10n } as Parameters<typeof wallet.writeContract>[0]);
+      } catch (e) {
+        if (!(await settleDue())) return null;
+        throw e;
+      } finally {
+        settling = false;
       }
-      return send({ account, chain, address: hook, abi: SEALED_POOL_ABI, functionName: "settle", gas: 3_000_000n } as Parameters<typeof wallet.writeContract>[0]);
     },
   };
 }

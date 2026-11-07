@@ -111,6 +111,14 @@ describe("reveal desk release", () => {
     expect(d.status(id).status).toBe("locked");
   });
 
+  it("records a failing settle instead of hiding it", async () => {
+    const hook = new FakeHook();
+    hook.settleIfDue = async () => { throw new Error("insufficient funds for gas"); };
+    const { d } = desk({ hook });
+    await d.tick();
+    expect(d.lastKeeperError?.message).toMatch(/settle: insufficient funds/);
+  });
+
   it("keeps a ticket locked when drand is unreachable while opening it", async () => {
     const hook = new FakeHook();
     const clock = new Clock(100);

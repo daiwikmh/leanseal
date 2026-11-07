@@ -162,6 +162,7 @@ export function sealedMempool(mempoolId: string, cfg: NodeConfig, chain: ChainRe
         batchHook: cfg.batchHook ?? null,
         revealRules: REVEAL_RULES.map(({ id, name, text }) => ({ id, name, text })),
         tickets: desk ? [...desk.tickets.values()].filter((e) => e.status === "locked").length : 0,
+        lastKeeperError: desk?.lastKeeperError ?? null,
         pending: [...node.entries.values()].filter((e) => e.status === "sealed").length,
       }),
     },
