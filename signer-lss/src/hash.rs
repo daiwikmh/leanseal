@@ -219,6 +219,9 @@ pub fn par_map<T: Send>(n: usize, f: impl Fn(usize) -> T + Sync) -> Vec<T> {
 /// [`par_map`] on at most `threads` threads: contiguous runs of `n / threads` indices each.
 pub fn par_map_on<T: Send>(threads: usize, n: usize, f: impl Fn(usize) -> T + Sync) -> Vec<T> {
     let threads = threads.clamp(1, n.max(1));
+    if threads == 1 {
+        return (0..n).map(f).collect();
+    }
     let chunk = n.div_ceil(threads).max(1);
     let f = &f;
     let (parts, spent): (Vec<Vec<T>>, Vec<Work>) = std::thread::scope(|scope| {

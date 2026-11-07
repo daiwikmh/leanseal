@@ -1,0 +1,19 @@
+[package]
+name = "lss-wasm"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[workspace]
+
+[lib]
+crate-type = ["cdylib"]
+
+[dependencies]
+leansphincs-s-keccak = { path = "../signer-lss" }
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
