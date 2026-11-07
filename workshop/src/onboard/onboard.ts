@@ -113,7 +113,7 @@ async function main() {
 
   const hash = await rpc(SUBMIT_URL, "eth_sendFrameTransaction", [toWire(tx)]) as Hex;
   log(`ADMITTED by the alt mempool: ${hash}`);
-  for (let i = 0; i < 60; i++) {
+  for (let i = 0; i < 180; i++) {
     const r = await rpc(ETHREX_URL, "eth_getTransactionReceipt", [hash]);
     if (r) {
       const gas = (r.frameReceipts ?? []).map((f: { gasUsed: string; status: string }) => `${BigInt(f.gasUsed)}${f.status === "0x1" ? "" : " (failed)"}`).join(", ");
@@ -126,7 +126,7 @@ async function main() {
     }
     await new Promise((res) => setTimeout(res, 1000));
   }
-  throw new Error(`${hash} not mined within 60 s`);
+  throw new Error(`${hash} not mined within 180 s`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });

@@ -112,7 +112,7 @@ async function main() {
   log(`ticket ${status}${st.revealTx ? ` by tx ${st.revealTx}` : ""}${st.note ? ` (${st.note})` : ""}`);
   if (status !== "revealed") process.exit(1);
 
-  for (let i = 0; i < 180; i++) {
+  for (let i = 0; i < 360; i++) {
     const now = await read<bigint>(hook, SELL ? "ethOf" : "tokenOf", [account]);
     const before = SELL ? ethBefore : tokenBefore;
     const o = (await read<Array<{ excluded: boolean }>>(hook, "ordersOf", [batchRound]))[index];
@@ -124,7 +124,7 @@ async function main() {
     }
     await sleep(1000);
   }
-  throw new Error(`batch ${batchRound} not settled within 180 s`);
+  throw new Error(`batch ${batchRound} not settled within 360 s`);
 }
 
 main().catch((e) => { console.error(e); process.exit(1); });
