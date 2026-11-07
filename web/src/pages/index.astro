@@ -3,6 +3,7 @@ import '../styles/global.css';
 import '../styles/compile.css';
 import ConsolePreview from '../components/ConsolePreview';
 import LeanSealFooter from '../components/ui/demo';
+const CONSOLE_URL = import.meta.env.PUBLIC_CONSOLE_URL ?? (process.env.VERCEL ? 'https://129-212-188-106.sslip.io/dashboard' : '/dashboard');
 const tools = [
   ['01', 'Run', 'Run a protected swap or watch a bot attack an unprotected one, on the local chain or the live devnet.'],
   ['02', 'Checks', 'See the ERC-8421 rule report for every transaction and every sealed order.'],
@@ -34,7 +35,7 @@ const letters = [
     <a class="skip-link" href="#main">Skip to content</a>
     <header class="site-header">
       <a class="brand" href="/" aria-label="leanseal home"><img src="/logo.png" width="20" height="20" alt="" />leanseal</a>
-      <a class="console-link" href="/dashboard">Open console <span aria-hidden="true">↗</span></a>
+      <a class="console-link" href={CONSOLE_URL}>Open console <span aria-hidden="true">↗</span></a>
     </header>
     <main id="main">
       <section class="hero" aria-label="leanseal">
@@ -50,7 +51,7 @@ const letters = [
       <section class="container intro">
         <div><p class="intro-lead">Your transaction shouldn’t be everyone else’s opportunity.</p></div>
         <div><p>LeanSeal pairs post-quantum smart wallets with a sealed batch auction on Uniswap v4. Your swap goes out as a hidden order, opens together with everyone else’s, and fills at one shared price. Bots have nothing to jump ahead of, and nothing is sent privately.</p></div>
-        <div class="intro-action"><p>Explore the working research prototype.</p><a class="solid-link" href="/dashboard">Open the console <span aria-hidden="true">↗</span></a><a href="#how-it-works">See how it works ↓</a></div>
+        <div class="intro-action"><p>Explore the working research prototype.</p><a class="solid-link" href={CONSOLE_URL}>Open the console <span aria-hidden="true">↗</span></a><a href="#how-it-works">See how it works ↓</a></div>
       </section>
 
       <section class="container section-space" id="how-it-works">
@@ -64,8 +65,8 @@ const letters = [
       </section>
 
       <section class="container section-space" id="console">
-        <div class="section-heading"><div><h2>How it’s built.</h2><p class="muted">Each part, what it does, and why it needs the alt mempool.</p></div><a class="text-link" href="/dashboard">Open console ↗</a></div>
-        <ConsolePreview client:load />
+        <div class="section-heading"><div><h2>How it’s built.</h2><p class="muted">Each part, what it does, and why it needs the alt mempool.</p></div><a class="text-link" href={CONSOLE_URL}>Open console ↗</a></div>
+        <ConsolePreview client:load consoleUrl={CONSOLE_URL} />
         <div class="tools-grid">{tools.map(([number,title,text])=><article><span class="eyebrow">{number}</span><h3>{title}</h3><p class="muted">{text}</p></article>)}</div>
       </section>
 
@@ -79,8 +80,8 @@ const letters = [
         </div>
       </section>
 
-      <section class="closing container"><h2>Sign for tomorrow.<br />Seal for today.</h2><a class="pill" href="/dashboard">Open leanseal <span aria-hidden="true">→</span></a><p class="muted">Research prototype · Local chain &amp; devnet</p></section>
+      <section class="closing container"><h2>Sign for tomorrow.<br />Seal for today.</h2><a class="pill" href={CONSOLE_URL}>Open leanseal <span aria-hidden="true">→</span></a><p class="muted">Research prototype · Local chain &amp; devnet</p></section>
     </main>
-    <LeanSealFooter client:visible />
+    <LeanSealFooter client:visible consoleUrl={CONSOLE_URL} />
   </body>
 </html>

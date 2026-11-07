@@ -5,7 +5,7 @@
 
 | | |
 |---|---|
-| Live demo | https://129-212-188-106.sslip.io (landing) · https://129-212-188-106.sslip.io/dashboard (console) |
+| Live demo | https://leanseal.vercel.app/ (landing) · https://129-212-188-106.sslip.io/dashboard (console) |
 | Our sealed-mempool node (public RPC) | `https://129-212-188-106.sslip.io/rpc` (add it as an instance on the explorer) |
 | Repository | https://github.com/daiwikmh/leanseal |
 | Project overview | [README.md](README.md) |
@@ -79,7 +79,7 @@ LeanSeal is exactly "something only an alt mempool makes possible": PQ-secure sm
 - **(b) More flexible state access in the paymaster:** a sponsor paymaster sits in the same validation prefix, so a new user's first frame transaction deploys the wallet, verifies the PQ signature, has gas sponsored and deposits, all in one. Admitted at block 6724, signed after a real Touch ID unlock.
 - **Relation to the alt mempool, beyond using it:** we added a `customMempools` extension point to the alt-mempool node and built our own ERC-8421 custom mempool on it, with published rules (ID = IPFS CID of the rules doc), its own gossip topic and admission rules REV-010…060. It carries drand-time-locked orders and reveals them on schedule, so a Uniswap v4 batch auction fills everyone at one price and rejects every other swap.
 - **How well it works:** a public-mempool swap was sandwiched for −3.0%; the sealed batch gave **0% loss with every bot front-run rejected**, locally and on the live devnet (commit `0x923274a9…e1e5`, block 6395).
-- **Practicality:** live at https://129-212-188-106.sslip.io. Judges need no funds: passkey sign-in, a quantum-safe key made in the browser, sponsored gas, and a test-funds faucet.
+- **Practicality:** live at https://leanseal.vercel.app/ (console: https://129-212-188-106.sslip.io/dashboard). Judges need no funds: passkey sign-in, a quantum-safe key made in the browser, sponsored gas, and a test-funds faucet.
 
 ## Feedback for the alt-mempool team
 

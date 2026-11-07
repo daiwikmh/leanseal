@@ -8,7 +8,7 @@ LeanSeal adds a **sealed batch auction** to Uniswap v4. A user commits only a ha
 
 We do not modify Uniswap. We use v4's standard extension point (a hook) and the existing `PoolManager`.
 
-**Try it live:** [129-212-188-106.sslip.io](https://129-212-188-106.sslip.io) · **Project overview:** [README.md](README.md)
+**Try it live:** [leanseal.vercel.app](https://leanseal.vercel.app/) · [console](https://129-212-188-106.sslip.io/dashboard) · **Project overview:** [README.md](README.md)
 
 ### Where to find the code
 
@@ -127,7 +127,7 @@ The client side of steps 1–3 and the wait for settlement is [`batch_swap.ts`](
 | SealedPoolHook | `0x3aBf5468CA1b8d2E1bfd0AA90B97Cd016eB6C080` | `0x22fDb32179D29d1f90a0Ef1810d2AeEcd8f94080` |
 | tUSD (test token) | `workshop/local.uni-state.json` | `0x5ed7367cbb2e9bc743e14ffc3fbd230c25c6059b` |
 | Liquidity | ~0.001 ETH | ~0.1 ETH + ~34.7 tUSD (topped up 2026-11-07) |
-| Live console | `localhost:4321` | [129-212-188-106.sslip.io](https://129-212-188-106.sslip.io) |
+| Live site | `localhost:4321` | [leanseal.vercel.app](https://leanseal.vercel.app/) (landing) · [console](https://129-212-188-106.sslip.io/dashboard) |
 
 ## 10. Measured results
 

@@ -29,7 +29,7 @@ const panels: Panel[] = [
   },
 ];
 
-export default function ConsolePreview() {
+export default function ConsolePreview({ consoleUrl = '/dashboard' }: { consoleUrl?: string }) {
   const [selected, setSelected] = useState(0);
   const tabs = useRef<Array<HTMLButtonElement | null>>([]);
   const panel = panels[selected];
@@ -56,7 +56,7 @@ export default function ConsolePreview() {
         <p className="eyebrow">{item.eyebrow}</p><h3>{item.title}</h3>
         <div className="preview-flow" style={{gridTemplateColumns:`repeat(${item.steps.length}, minmax(0, 1fr))`}}>{item.steps.map((step,i) => <div key={step}><span>{String(i+1).padStart(2,'0')}</span><strong>{step}</strong></div>)}</div>
         <p className="muted">{item.text}</p>
-        <a className="solid-link" href="/dashboard">Try it in the console ↗</a>
+        <a className="solid-link" href={consoleUrl}>Try it in the console ↗</a>
       </div>)}
     </div>
     <span className="preview-sr" aria-live="polite">{panel.label} selected</span>

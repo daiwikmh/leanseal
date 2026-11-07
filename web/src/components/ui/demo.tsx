@@ -2,7 +2,7 @@
 
 import HalftoneWordmarkFooter from "@/components/ui/halftone-wordmark-footer"
 
-export default function Demo() {
+export default function Demo({ consoleUrl = '/dashboard' }: { consoleUrl?: string }) {
   return <div className="w-full"><HalftoneWordmarkFooter
     wordmark="leanseal"
     label="LeanSeal · Private Ethereum transactions"
@@ -12,7 +12,7 @@ export default function Demo() {
     height="clamp(460px, 42vw, 640px)"
     columns={[
       {title:"Explore",links:[{label:"How it works",href:"#how-it-works"},{label:"The console",href:"#console"}]},
-      {title:"Build",links:[{label:"Open console ↗",href:"/dashboard"},{label:"How it works",href:"#how-it-works"}]},
+      {title:"Build",links:[{label:"Open console ↗",href:consoleUrl},{label:"How it works",href:"#how-it-works"}]},
       {title:"About",links:[{label:"Trust & limitations",href:"#trust"},{label:"Back to the top",href:"#main"}]},
     ]}
   /></div>
