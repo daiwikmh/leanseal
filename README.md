@@ -12,8 +12,9 @@
 ![chain](https://img.shields.io/badge/EIP--8141-devnet%201337-blue)
 ![pq](https://img.shields.io/badge/signature-post--quantum-purple)
 ![mempool](https://img.shields.io/badge/ERC--8421-custom%20mempool-6557df)
+![license](https://img.shields.io/badge/license-MIT-green)
 
-**[Live site](https://leanseal.vercel.app/)** · **[Console](https://129-212-188-106.sslip.io/dashboard)** · **[Submission references](ef.md)** · **[Uniswap v4 design](uniswap-use-description.md)** · **[Sealed-mempool rules](docs/leanseal-mempool.md)** · **[Devnet explorer](https://explorer.altmempool.wtf/)**
+**[Live site](https://leanseal.vercel.app/)** · **[Console](https://129-212-188-106.sslip.io/dashboard)** · **[Submission references](ef.md)** · **[Uniswap v4 design](uniswap-use-description.md)** · **[Sealed-mempool rules](docs/leanseal-mempool.md)** · **[Uniswap feedback](FEEDBACK.md)** · **[Devnet explorer](https://explorer.altmempool.wtf/)**
 
 </div>
 
@@ -203,7 +204,7 @@ Node configs, the batch pool and the onboarding contracts are set up with the sc
 
 ## License
 
-No license file yet for LeanSeal's own code. Vendored code keeps its upstream licenses: [SPHINCs-](contracts/src/vendor/sphincs/LICENSE) (MIT), [SPHINCS+ reference](signer/LICENSE.upstream), [leanSphincs](signer-lss/LICENSE.upstream) (MIT), [mempool sidecar](sidecar/LICENSE), [DM Sans](web/public/fonts/OFL.txt) (OFL).
+LeanSeal's own code is released under the [MIT License](LICENSE). Vendored code keeps its upstream licenses: [SPHINCs-](contracts/src/vendor/sphincs/LICENSE) (MIT), [SPHINCS+ reference](signer/LICENSE.upstream), [leanSphincs](signer-lss/LICENSE.upstream) (MIT), [mempool sidecar](sidecar/LICENSE), [DM Sans](web/public/fonts/OFL.txt) (OFL). `workshop/` builds on [forshtat/mempool-workshop](https://github.com/forshtat/mempool-workshop), which ships without a license file; the MIT license covers our additions there, not the upstream workshop code.
 
 ---
 
