@@ -1,0 +1,196 @@
+/* ---- Home ---- */
+.home-grid {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: var(--sp-lg);
+  align-items: start;
+}
+.home-left,
+.home-right {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-lg);
+}
+.card--balance {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-xs);
+}
+.balance-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.chain-badge {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: var(--surface-hover);
+  color: var(--muted);
+}
+.stat-card__value--lg {
+  font-size: 38px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+.balance-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: var(--sp-xs);
+}
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--sp-sm);
+  margin-top: var(--sp-sm);
+}
+.action-btn {
+  padding: 12px 8px;
+  border-radius: var(--radius-sm);
+  background: var(--surface-hover);
+  border: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink);
+  cursor: pointer;
+  text-align: center;
+}
+.action-btn:hover {
+  background: var(--surface-line);
+}
+
+.asset-list {
+  display: flex;
+  flex-direction: column;
+}
+.asset-list--loading {
+  font-size: 13px;
+  color: var(--muted);
+}
+.asset-row {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-sm);
+  padding: var(--sp-sm) 0;
+  border-top: 1px solid var(--line);
+}
+.asset-row:first-child {
+  border-top: 0;
+}
+.asset-row__identity {
+  flex: 1;
+  min-width: 0;
+  font-size: 13px;
+  font-weight: 600;
+}
+.asset-row__price {
+  font-size: 13px;
+  font-weight: 500;
+  text-align: right;
+  min-width: 96px;
+  font-variant-numeric: tabular-nums;
+}
+.asset-row__change {
+  font-size: 11px;
+  text-align: right;
+  min-width: 56px;
+  color: var(--muted);
+}
+.change-up {
+  color: var(--up);
+}
+.change-down {
+  color: var(--down);
+}
+
+.ticker-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: var(--sp-md);
+}
+.ticker-row--loading {
+  display: block;
+  padding: var(--sp-lg);
+  font-size: 13px;
+  color: var(--muted);
+  background: var(--surface);
+  border-radius: var(--radius-md);
+}
+.ticker-card {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  padding: var(--sp-md);
+}
+.ticker-card__head {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-xs);
+}
+.ticker-card__head .row-mark {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  font-size: 10px;
+}
+.ticker-card__symbol {
+  font-size: 12px;
+  color: var(--muted);
+}
+.ticker-card__price {
+  font-size: 20px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+.ticker-card__change {
+  font-size: 12px;
+  margin-top: 2px;
+}
+
+.chart-value-row {
+  display: flex;
+  align-items: baseline;
+  gap: var(--sp-sm);
+  margin-top: 4px;
+}
+.chart-change {
+  font-size: 13px;
+  font-weight: 500;
+}
+.chart-area {
+  margin-top: var(--sp-md);
+  height: 220px;
+}
+.chart-area svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.chart-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 220px;
+  color: var(--muted);
+  font-size: 13px;
+  text-align: center;
+  padding: 0 var(--sp-xl);
+}
+
+.stat-card__value {
+  font-size: 32px;
+  font-weight: 500;
+  letter-spacing: -0.03em;
+}
+
+
+.chart-area { height: var(--chart-h, 220px); }
+.chart-empty { height: var(--chart-h, 220px); }
+.card--chart .chart-area--tall { height: var(--chart-tall, 340px); }
+.an-chart__area { min-height: 0; height: var(--chart-h, 300px); }
+.lab svg.eq, .bars svg { width: 100%; height: var(--chart-h, 220px); max-height: var(--chart-h, 220px); }
+.chart-size { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+.chart-size select { padding: 6px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--paper); color: var(--ink); font: inherit; font-size: 12px; }

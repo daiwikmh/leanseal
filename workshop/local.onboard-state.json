@@ -1,7 +1,0 @@
-{
-  "verifier": "0xd8dd7699cb3f2be8329b4089145367405af82706",
-  "module": "0xf4a391275b44f1fec305361863641933eebe9bc5",
-  "implementation": "0x0ce8c191c2998806df1d5b106b5470e5c8092b7e",
-  "factory": "0xe60ca131ebb701a2bd39cf87766c0a79e5ed62b4",
-  "paymaster": "0xcef29ac3a20e6479f4189a70df11ff3be5a52ce8"
-}

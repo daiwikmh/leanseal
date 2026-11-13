@@ -1,0 +1,50 @@
+---
+import "../styles/landing.css";
+import "../styles/system.css";
+import "../styles/start.css";
+import fontUrl from "../assets/fonts/dm-sans.woff2?url";
+import LogoIntro from "../components/landing/LogoIntro.astro";
+import SiteFooter from "../components/landing/SiteFooter.astro";
+import SiteHeader from "../components/landing/SiteHeader.astro";
+import { site } from "../data/site";
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="description" content={site.description} />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={site.name} />
+    <meta property="og:title" content={site.shareTitle} />
+    <meta property="og:description" content={site.shareDescription} />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content={site.shareTitle} />
+    <meta name="twitter:description" content={site.shareDescription} />
+    <meta name="theme-color" content="#0b0f0e" />
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preload" href={fontUrl} as="font" type="font/woff2" crossorigin />
+    <title>{site.shareTitle}</title>
+    <script is:inline>
+      try {
+        if (sessionStorage.getItem("logo-intro-seen")) document.documentElement.classList.add("logo-intro-skip");
+        sessionStorage.setItem("logo-intro-seen", "1");
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <LogoIntro />
+    <a class="skip-link" href="#main">Skip to content</a>
+    <div class="landing-shell">
+      <SiteHeader />
+      <main id="main">
+        <slot />
+      </main>
+    </div>
+    <SiteFooter />
+    <script>
+      import "../scripts/landing/index";
+    </script>
+  </body>
+</html>

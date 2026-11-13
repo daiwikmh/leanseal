@@ -1,0 +1,41 @@
+---
+import App from "../layouts/App.astro";
+import AccountPanel from "../components/AccountPanel.astro";
+import AgreementsPanel from "../components/AgreementsPanel.astro";
+import PayoutsPanel from "../components/PayoutsPanel.astro";
+import LinksPanel from "../components/LinksPanel.astro";
+import AgentsPanel from "../components/AgentsPanel.astro";
+import DevelopersPanel from "../components/DevelopersPanel.astro";
+import CompanyPanel from "../components/CompanyPanel.astro";
+import Gate from "../components/Gate.astro";
+import HomePanel from "../components/HomePanel.astro";
+import InvoicesPanel from "../components/InvoicesPanel.astro";
+import Modal from "../components/Modal.astro";
+import Topbar from "../components/Topbar.astro";
+---
+
+<App title="opencash · US company + USDC on NEAR">
+  <Gate />
+  <div class="dash" data-dash data-tab="home" hidden>
+    <Topbar />
+    <main class="dash__content">
+      <div class="preview-banner" data-preview hidden>
+        <b>Preview</b> · The registry contract isn't deployed on NEAR yet, so nothing can be saved or loaded. Every screen is real; data appears once it's deployed.
+        <small class="mono" data-preview-reason></small>
+      </div>
+      <HomePanel />
+      <InvoicesPanel />
+      <PayoutsPanel />
+      <LinksPanel />
+      <AgentsPanel />
+      <AgreementsPanel />
+      <DevelopersPanel />
+      <CompanyPanel />
+      <AccountPanel />
+    </main>
+  </div>
+  <Modal />
+  <script>
+    import "../scripts/app/index";
+  </script>
+</App>

@@ -1,0 +1,32 @@
+{
+  "name": "mobile",
+  "version": "1.0.0",
+  "main": "index.ts",
+  "private": true,
+  "scripts": {
+    "start": "expo start",
+    "android": "expo run:android",
+    "ios": "expo run:ios",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@expo-google-fonts/dm-sans": "^0.4.2",
+    "@scure/base": "^2.0.0",
+    "expo": "~57.0.22",
+    "expo-clipboard": "~57.0.2",
+    "expo-font": "~57.0.4",
+    "expo-splash-screen": "~57.0.9",
+    "expo-status-bar": "~57.0.1",
+    "near-api-js": "7.5.3",
+    "react": "19.2.3",
+    "react-native": "0.86.3",
+    "react-native-get-random-values": "^2.0.0",
+    "react-native-passkey": "3.6.1",
+    "react-native-safe-area-context": "~5.7.0",
+    "shared": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/react": "~19.2.2",
+    "typescript": "~6.0.3"
+  }
+}

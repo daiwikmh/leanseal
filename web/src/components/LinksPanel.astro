@@ -1,0 +1,19 @@
+<section class="panel" data-panel="links" hidden>
+  <div class="home-grid payouts-grid">
+    <div class="card">
+      <span class="panel__label">New payment link</span>
+      <p class="panel__lede">A reusable link or checkout. Anyone can pay from any chain; every payment becomes an invoice with on-chain status, CSV and webhooks.</p>
+      <form data-link-form style="display:grid;gap:var(--sp-sm);margin-top:var(--sp-md)">
+        <label class="field"><span>Title</span><input name="title" placeholder="Design retainer · 1 month" /></label>
+        <label class="field"><span>Description (optional)</span><input name="description" placeholder="Shown to the payer" /></label>
+        <label class="field"><span>Amount in USD · leave empty to let the payer choose</span><input name="amount" inputmode="decimal" placeholder="499.00" /></label>
+        <p class="form-error" data-link-error></p>
+        <button type="submit" class="btn btn--primary">Create link</button>
+      </form>
+    </div>
+    <div class="home-right">
+      <h3 class="panel__subtitle" style="margin-top:0">Your links</h3>
+      <div data-link-table class="table-wrap table-wrap--loading">Loading…</div>
+    </div>
+  </div>
+</section>

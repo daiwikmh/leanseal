@@ -1,0 +1,37 @@
+<section class="panel" data-panel="developers" hidden>
+  <div class="home-grid payouts-grid">
+    <div style="display:grid;gap:var(--sp-md)">
+      <div class="card">
+        <span class="panel__label">API keys</span>
+        <p class="panel__lede">Create invoices and checkouts from your own app. Keys are shown once; opencash stores only their hash.</p>
+        <form data-key-form class="btn-row" style="margin-top:var(--sp-md)">
+          <input class="dash__search" name="name" placeholder="Production server" style="flex:1" />
+          <button type="submit" class="btn btn--primary btn--sm">Create key</button>
+        </form>
+        <div class="warn-box" data-new-key hidden></div>
+        <div data-key-table class="table-wrap" style="margin-top:var(--sp-md)"></div>
+      </div>
+      <div class="card">
+        <span class="panel__label">Webhooks</span>
+        <p class="panel__lede">We POST <code>invoice.pending</code>, <code>invoice.paid</code>, <code>invoice.refunded</code>, <code>invoice.failed</code>, <code>payout.completed</code>, <code>payout.refunded</code>, <code>payout.failed</code>, <code>agent.payment</code> and <code>x402.paid</code>, signed with HMAC-SHA256 in the <code>Opencash-Signature</code> header. Failed deliveries retry after 1, 5, 30 and 120 minutes.</p>
+        <form data-hook-form class="btn-row" style="margin-top:var(--sp-md)">
+          <input class="dash__search" name="url" placeholder="https://api.example.com/opencash/webhook" style="flex:1" />
+          <button type="submit" class="btn btn--primary btn--sm">Add endpoint</button>
+        </form>
+        <div class="warn-box" data-new-secret hidden></div>
+        <div data-hook-list style="margin-top:var(--sp-md)"></div>
+        <button type="button" class="btn btn--sm" data-hook-test>Send a test event</button>
+        <p class="form-error" data-dev-error></p>
+      </div>
+      <div class="card">
+        <span class="panel__label">Sell with x402</span>
+        <p class="panel__lede">Charge AI agents per request. Point your x402 server at the opencash facilitator with your API key and <code>payTo</code> set to your account. Buyers sign a gasless USDC transfer on NEAR; opencash relays it and pays the gas. Minimum price 0.01 USDC.</p>
+        <div data-x402-list class="table-wrap" style="margin-top:var(--sp-md)"></div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="panel__label">Quickstart</span>
+      <pre class="doc-view" data-dev-snippet></pre>
+    </div>
+  </div>
+</section>

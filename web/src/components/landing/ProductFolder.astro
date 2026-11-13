@@ -1,0 +1,56 @@
+---
+import { folderPages } from "../../data/landing";
+import { site } from "../../data/site";
+import Mark from "../Mark.astro";
+import FolderIcon from "./FolderIcon.astro";
+import LaunchLink from "./LaunchLink.astro";
+
+const total = String(folderPages.length).padStart(2, "0");
+---
+
+<div class="product-folder" data-open="false">
+  <div class="folder-stage">
+    <div class="folder-back"></div>
+    <div class="folder-paper-stack" aria-hidden="true"><span></span><span></span></div>
+    <div class="folder-sheet" id="folder-product" aria-hidden="true" inert>
+      <div class="folder-sheet-top">
+        <span class="folder-letterhead"><Mark /><span>OPENCASH<br /><small>PRODUCT NOTES / NEAR</small></span></span>
+        <button type="button" class="folder-close">Close ×</button>
+      </div>
+      <div class="folder-pages">
+        {folderPages.map((page, i) => (
+          <section class="folder-page" aria-label={page.label} hidden={i !== 0}>
+            <div class="folder-object">
+              <span class="folder-kicker">OPENCASH / 0{i + 1}</span>
+              <div class="folder-object-icon" aria-hidden="true"><FolderIcon kind={page.icon} /></div>
+              <span class="folder-object-caption">{page.caption}</span>
+            </div>
+            <div class="folder-rail" aria-hidden="true"><span>DETAILS</span><span>0{i + 1} — {total}</span></div>
+            <div class="folder-detail">
+              <span class="folder-kicker">{page.label}</span>
+              <h2>{page.title.split("\n").map((line) => <span>{line}</span>)}</h2>
+              <p class="folder-lede">{page.description}</p>
+              <dl class="folder-facts">{page.facts.map(([label, value]) => <div><dt>{label}</dt><dd>{value}</dd></div>)}</dl>
+              <div class="folder-detail-bottom"><span>{site.network.toUpperCase()}</span><LaunchLink>Launch app ↗</LaunchLink></div>
+            </div>
+          </section>
+        ))}
+      </div>
+      <nav class="folder-pagination" aria-label="Product pages">
+        <button type="button" class="folder-prev" disabled>← Back</button>
+        <span class="folder-page-count" aria-live="polite" aria-atomic="true">01 / {total}</span>
+        <button type="button" class="folder-next">Next page →</button>
+      </nav>
+    </div>
+    <button class="folder-cover" type="button" aria-label="Open folder to explore opencash" aria-expanded="false" aria-controls="folder-product">
+      <span class="folder-left" aria-hidden="true">
+        <span class="folder-meta"><span>opencash<br />Payments infrastructure<br />On NEAR —</span><span>Get paid<br />Pay out<br />Build on it.</span></span>
+        <span class="folder-title">Open<br />possibilities.</span>
+        <span class="folder-edition">PRODUCT NOTES — 001</span>
+      </span>
+      <span class="folder-right" aria-hidden="true"><span class="folder-spine">OPENCASH / ANY CHAIN IN. ANY CHAIN OUT.</span></span>
+      <span class="folder-fastener" aria-hidden="true"><span class="folder-string"></span><i></i><i></i></span>
+    </button>
+  </div>
+  <button class="folder-toggle" type="button" aria-expanded="false" aria-controls="folder-product"><span>Open to explore</span><span class="folder-toggle-icon" aria-hidden="true">↗</span></button>
+</div>

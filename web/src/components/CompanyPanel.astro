@@ -1,0 +1,44 @@
+---
+import FormationPanel from "./FormationPanel.astro";
+---
+
+<section class="panel" data-panel="company" hidden>
+  <div class="account-layout">
+    <div class="account-layout__card">
+      <div class="card card--violet">
+        <span class="card__label">Legal entity</span>
+        <b class="company__name" data-company-name>—</b>
+        <span class="company__meta" data-company-type>—</span>
+        <div class="stat-grid">
+          <div class="stat"><small>Founder country</small><b data-company-country>—</b></div>
+          <div class="stat"><small>Status</small><b data-company-status>—</b></div>
+          <div class="stat"><small>Opened</small><b data-company-opened>—</b></div>
+          <div class="stat"><small>Record</small><b><a data-company-record target="_blank" rel="noopener">NEAR ↗</a></b></div>
+        </div>
+      </div>
+    </div>
+    <div class="account-layout__actions">
+      <FormationPanel />
+      <div class="card">
+        <span class="panel__label">Status history</span>
+        <ol class="steps" data-company-steps></ol>
+      </div>
+      <div class="card">
+        <span class="panel__label">Yearly US filings</span>
+        <ul class="filings" data-company-filings></ul>
+        <p class="panel__lede">Drafted by the advisor from your answers. Have a US tax professional review before filing.</p>
+      </div>
+      <div class="card">
+        <span class="panel__label">Formation application</span>
+        <p class="panel__lede" data-application-state>No application on file yet.</p>
+        <p class="mono" data-application-hash></p>
+        <button type="button" class="btn btn--sm" data-application-view hidden>View my answers</button>
+        <div class="line-items" data-application-body hidden></div>
+      </div>
+      <div class="card">
+        <span class="panel__label">Document hashes on NEAR</span>
+        <ul class="filings mono" data-company-docs></ul>
+      </div>
+    </div>
+  </div>
+</section>

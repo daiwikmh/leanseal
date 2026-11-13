@@ -1,0 +1,29 @@
+---
+import Mark from "./Mark.astro";
+---
+
+<header class="dash__topbar">
+  <a class="wordmark" href="/"><Mark />open<span>cash</span></a>
+  <nav class="dash__tabs" data-tabs role="tablist" aria-label="Sections">
+    <button data-tab="home" role="tab" aria-selected="true">Home</button>
+    <button data-tab="invoices" role="tab" aria-selected="false">Invoices</button>
+    <button data-tab="payouts" role="tab" aria-selected="false">Payouts</button>
+    <button data-tab="links" role="tab" aria-selected="false">Links</button>
+    <button data-tab="agents" role="tab" aria-selected="false">Agents</button>
+    <button data-tab="agreements" role="tab" aria-selected="false">Agreements</button>
+    <button data-tab="developers" role="tab" aria-selected="false">Developers</button>
+    <button data-tab="company" role="tab" aria-selected="false">Company</button>
+    <button data-tab="account" role="tab" aria-selected="false">Account</button>
+  </nav>
+  <div class="dash__topbar-spacer"></div>
+  <div class="dash__topbar-utility">
+    <button type="button" class="btn btn--primary btn--sm" data-new-invoice>New invoice</button>
+    <div class="dash__account-menu" data-account-menu>
+      <button type="button" class="dash__address-chip" data-topbar-address aria-haspopup="menu" aria-expanded="false">—</button>
+      <div class="dash__menu" role="menu" data-account-menu-list hidden>
+        <button type="button" class="dash__menu-item" role="menuitem" data-copy-account>Copy account</button>
+        <button type="button" class="dash__menu-item" role="menuitem" data-sign-out>Sign out</button>
+      </div>
+    </div>
+  </div>
+</header>

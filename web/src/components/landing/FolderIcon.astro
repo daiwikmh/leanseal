@@ -1,0 +1,36 @@
+---
+import type { FolderIconKind } from "../../data/landing";
+
+interface Props {
+  kind: FolderIconKind;
+}
+
+const { kind } = Astro.props;
+---
+
+<svg viewBox="0 0 240 240" fill="none">
+  {kind === "terminal" && (
+    <>
+      <rect x="38" y="48" width="164" height="130" rx="16" />
+      <path d="M38 77h164M90 178v20m60-20v20M75 198h90" />
+      <path class="object-detail" d="M72 101v49m30-58v49m30-37v52m30-66v51" />
+      <path class="object-solid" d="M65 113h14v23H65zm30-12h14v22H95zm30 19h14v23h-14zm30-22h14v26h-14z" />
+    </>
+  )}
+  {kind === "bins" && (
+    <>
+      <path d="m120 43 83 43-83 44-83-44z" />
+      <path d="m37 115 83 44 83-44M37 145l83 44 83-44" />
+      <path class="object-detail" d="M120 130v59M37 86v59m166-59v59" />
+      <path d="m85 68 82 44m-12-44-82 44" />
+    </>
+  )}
+  {kind === "limits" && (
+    <>
+      <path d="M120 35 190 62v55c0 43-36 71-70 88-34-17-70-60-70-88V62z" />
+      <circle cx="120" cy="103" r="22" />
+      <path class="object-solid" d="m114 124-5 34h22l-5-34" />
+      <path class="object-detail" d="m69 72 51-20 51 20" />
+    </>
+  )}
+</svg>

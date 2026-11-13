@@ -1,0 +1,21 @@
+---
+import { site } from "../../data/site";
+
+interface Props {
+  class?: string;
+}
+
+const { class: className } = Astro.props;
+---
+
+{
+  site.launchEnabled ? (
+    <a class={className} href={site.dashboardPath}>
+      <slot />
+    </a>
+  ) : (
+    <a class:list={[className, "is-disabled"]} role="link" aria-disabled="true" tabindex="-1" title="Opening soon">
+      <slot />
+    </a>
+  )
+}

@@ -1,65 +1,13 @@
+node_modules/
 .env
-*.env
 .env.*
 !.env.example
-*.seed
-.workshop-state.json
-workshop/pq-state.json
-workshop/pq-last-*
-sidecar/config.json
-sidecar/data/
-node_modules/
-
-
-./PLAN.md
-contracts/out/
-contracts/cache/
-sealing-kit/coverage/
-signer/*.o
-signer/*.d
-signer/leanseal-signer
-*.cache
-leanseal-node/*.key.json
-leanseal-node/leanseal.config.json
-leanseal-node/builders.json
-sidecar/config.local.json
-sidecar/data-local/
-.secrets/
-
-# leanSphincs-s signer build
-signer-lss/target/
-signer-lss/lssk
-
-# web
-web/node_modules/
-web/dist/
-web/.astro/
-demo/runs.json
-
-# node B configs (contain relayer key)
-sidecar/config.local-*.json
-leanseal-node/leanseal.config.*.json
-
-# node data dirs (contain p2p identity keys)
-sidecar/data-local*/
-sidecar/data/
-# logs
+dist/
+build/
+.expo/
 *.log
-localnet/data/
-
-# Foundry dependencies (reinstall with: cd contracts && forge install foundry-rs/forge-std --no-git)
-contracts/lib/
-
-# passkey signer wasm build
-signer-lss-wasm/target/
-
-# upstream sidecar extras not needed to build or run the node
-sidecar/.github/
-sidecar/deploy/
-sidecar/deployments/
-sidecar/docs/plans/
-sidecar/docs/superpowers/
-sidecar/test/e2e/
-sidecar/CLAUDE.md
-sidecar/CONTRIBUTING.md
-sidecar/funding.json
+.DS_Store
+contracts/*/target/
+.private/
+.wrangler/
+backend/.xmtp/

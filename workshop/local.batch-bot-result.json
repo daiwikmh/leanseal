@@ -1,8 +1,0 @@
-{
-  "commitsSeen": 1,
-  "revealsSeen": 1,
-  "frontRunAttempts": 1,
-  "frontRunsBlocked": 1,
-  "sandwiched": false,
-  "blockedReason": "the hook's beforeSwap rejects it: the pool only trades in batches (OutsideSwap)"
-}

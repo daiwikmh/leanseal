@@ -1,0 +1,27 @@
+---
+import { phone } from "../../data/landing";
+import Mark from "../Mark.astro";
+---
+
+<section class="intro section-frame" id="about">
+  <div class="intro-heading"><span class="section-name">WHY OPENCASH</span><h2>Money in.<br /><span>Money out.<br />Any chain.</span></h2></div>
+  <div class="phone-stage patterned" aria-label="Illustrative opencash app preview">
+    <div class="phone">
+      <div class="phone-top"><span>9:41</span><i></i><span>▰</span></div>
+      <div class="phone-brand"><Mark /><span>open cash</span><span class="avatar">AC</span></div>
+      <small>USDC on NEAR</small><strong class="phone-balance">1,250<span>.50</span></strong>
+      <div class="phone-actions"><span>Get paid</span><span>Pay out</span></div>
+      <div class="mini-chart"><svg viewBox="0 0 240 90" aria-hidden="true"><path d="M0 78 16 70 30 74 45 52 59 58 75 36 89 45 105 29 120 38 135 19 150 29 167 12 180 21 199 9 215 15 240 2" /></svg></div>
+      <div class="phone-label">Activity <span>acme.opencash.near</span></div>
+      {phone.invoices.map(([letter, client, detail, amount]) => (
+        <div class="market-row"><span class="coin">{letter}</span><span><b>{client}</b><small>{detail}</small></span><span class="market-direction">{amount}</span></div>
+      ))}
+      <div class="phone-label">Payroll <span>November</span></div><div class="phone-bin">3 people · 3 chains · 1 signature <span>↗</span></div>
+    </div>
+    <span class="preview-caption">Illustrative preview</span>
+  </div>
+  <div class="intro-bottom">
+    <p>Your customers hold USDC on Base, ETH on Arbitrum, SOL or BTC. Your contractors want to be paid on whatever chain they use. opencash sits in the middle: one USDC account on NEAR, NEAR Intents on both sides, and an on-chain record of every payment.</p>
+    <ul class="benefits"><li><span aria-hidden="true">↓</span>Accept any chain</li><li><span aria-hidden="true">↑</span>Pay out to any chain</li><li><span aria-hidden="true">⌘</span>Passkey, no gas</li></ul>
+  </div>
+</section>

@@ -1,0 +1,16 @@
+---
+import { footerLinks } from "../../data/site";
+import Mark from "../Mark.astro";
+---
+
+<footer class="site-footer">
+  <div class="footer-top">
+    <a class="wordmark" href="#home"><Mark />open<span>cash</span></a>
+    <p>Payments infrastructure on NEAR. Any chain in, any chain out, settled in USDC.</p>
+    <div>{footerLinks.map((link) => <a href={link.href}>{link.label}</a>)}</div>
+  </div>
+  <div class="footer-statement">Remittance for<br /><span>open worlds.</span></div>
+  <div class="footer-bottom">
+    <span>© {new Date().getFullYear()} opencash</span><span>Built at NEAR HACKATHON</span><a href="#home">Back to top ↑</a>
+  </div>
+</footer>

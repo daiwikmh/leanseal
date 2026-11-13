@@ -1,87 +1,22 @@
 ---
-import '../styles/global.css';
-import '../styles/compile.css';
-import ConsolePreview from '../components/ConsolePreview';
-import LeanSealFooter from '../components/ui/demo';
-const CONSOLE_URL = import.meta.env.PUBLIC_CONSOLE_URL ?? (process.env.VERCEL ? 'https://129-212-188-106.sslip.io/dashboard' : '/dashboard');
-const tools = [
-  ['01', 'Run', 'Run a protected swap or watch a bot attack an unprotected one, on the local chain or the live devnet.'],
-  ['02', 'Checks', 'See the ERC-8421 rule report for every transaction and every sealed order.'],
-  ['03', 'Transactions', 'Every run lists its commit, the node’s reveal and the sealed ticket, with explorer links.'],
-  ['04', 'Wallets', 'Sign in with a passkey, create your wallet in one sponsored transaction, and check balances.'],
-];
-const letters = [
-  ['#f76d18', 'M 100 20 C 148 -3 48 176 24 194 C 9 206 6 194 17 177 L 105 177'],
-  ['#2c9f28', 'M 124 165 C 86 217 10 200 15 143 C 21 94 126 75 130 107 C 132 131 51 150 17 148'],
-  ['#b29a00', 'M 127 103 C 79 67 14 114 17 165 C 20 218 91 204 119 149 L 136 100 L 119 189 Q 123 200 141 185'],
-  ['#8c89e7', 'M 18 190 L 35 102 L 18 190 C 41 109 105 72 125 115 C 140 143 107 185 130 192'],
-  ['#26251e', 'M 131 108 C 92 78 20 95 28 125 C 35 151 135 147 124 177 C 110 209 35 208 12 180'],
-  ['#916031', 'M 128 165 C 89 217 12 200 17 143 C 23 94 128 75 132 107 C 134 131 53 150 19 148'],
-  ['#2268ff', 'M 127 103 C 79 67 14 114 17 165 C 20 218 91 204 119 149 L 136 100 L 119 189 Q 123 200 141 185'],
-  ['#f76d18', 'M 102 20 C 150 -3 50 176 26 194 C 11 206 8 194 19 177 L 109 177'],
-];
+import Access from "../components/landing/Access.astro";
+import Closing from "../components/landing/Closing.astro";
+import Connection from "../components/landing/Connection.astro";
+import Demo from "../components/landing/Demo.astro";
+import Hero from "../components/landing/Hero.astro";
+import Intro from "../components/landing/Intro.astro";
+import Platform from "../components/landing/Platform.astro";
+import Showcase from "../components/landing/Showcase.astro";
+import Landing from "../layouts/Landing.astro";
 ---
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="LeanSeal: quantum-safe wallets and sandwich-proof swaps on Uniswap v4, through a sealed batch auction on the EIP-8141 alternative mempool." />
-    <link rel="icon" href="/favicon.png" type="image/png" />
-    <link rel="preload" href="/compile/gothic.woff2" as="font" type="font/woff2" crossorigin />
-    <title>leanseal — Seal your swap with Post-quantum wallets.</title>
-  </head>
-  <body>
-    <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <a class="brand" href="/" aria-label="leanseal home"><img src="/logo.png" width="20" height="20" alt="" />leanseal</a>
-      <a class="console-link" href={CONSOLE_URL}>Open console <span aria-hidden="true">↗</span></a>
-    </header>
-    <main id="main">
-      <section class="hero" aria-label="leanseal">
-        <div class="container hero-inner">
-          <h1><svg class="wordmark" viewBox="0 0 1110 220" fill="none" role="img" aria-label="leanseal">
-            <title>leanseal</title>
-            {letters.map(([color,path],i) => <g transform={`translate(${i * 137}, 0)`}><path class="hero-letter" d={path} stroke={color} pathLength="1" style={`--letter:${i}`} /></g>)}
-          </svg></h1>
-          <div class="hero-caption"><p>Seal your swap with Post-quantum wallets.</p><p>Built for Ethereum. Future of Uniswap</p></div>
-        </div>
-      </section>
 
-      <section class="container intro">
-        <div><p class="intro-lead">Your transaction shouldn’t be everyone else’s opportunity.</p></div>
-        <div><p>LeanSeal pairs post-quantum smart wallets with a sealed batch auction on Uniswap v4. Your swap goes out as a hidden order, opens together with everyone else’s, and fills at one shared price. Bots have nothing to jump ahead of, and nothing is sent privately.</p></div>
-        <div class="intro-action"><p>Explore the working research prototype.</p><a class="solid-link" href={CONSOLE_URL}>Open the console <span aria-hidden="true">↗</span></a><a href="#how-it-works">See how it works ↓</a></div>
-      </section>
-
-      <section class="container section-space" id="how-it-works">
-        <h2>From your wallet to the block.</h2>
-        <p class="muted">A hidden order, opened on time, filled at one price.</p>
-        <div class="journey-art" aria-label="A wallet signs an order, the order travels sealed through the alternative mempool, and nodes reveal it into a one-price batch on Uniswap v4.">
-          <div><img class="journey-image" src="/images/leanseal/wallet-scanlines.png" alt="Photograph of a leather wallet rendered in violet waveform lines" width="1200" height="800" loading="lazy" /><span>Your wallet</span></div><span class="journey-arrow" aria-hidden="true">→</span>
-          <div><img class="journey-image" src="/images/leanseal/envelope-scanlines.png" alt="Photograph of a wax-sealed envelope rendered in turquoise waveform lines" width="1200" height="800" loading="lazy" /><span>Sealed order</span></div><span class="journey-arrow" aria-hidden="true">→</span>
-          <div><img class="journey-image" src="/images/leanseal/builders-scanlines.png" alt="Photograph of data-center server racks rendered in green waveform lines" width="1200" height="800" loading="lazy" /><span>Uniswap batch → block</span></div>
-        </div>
-      </section>
-
-      <section class="container section-space" id="console">
-        <div class="section-heading"><div><h2>How it’s built.</h2><p class="muted">Each part, what it does, and why it needs the alt mempool.</p></div><a class="text-link" href={CONSOLE_URL}>Open console ↗</a></div>
-        <ConsolePreview client:load consoleUrl={CONSOLE_URL} />
-        <div class="tools-grid">{tools.map(([number,title,text])=><article><span class="eyebrow">{number}</span><h3>{title}</h3><p class="muted">{text}</p></article>)}</div>
-      </section>
-
-      <section class="container section-space trust" id="trust">
-        <div><h2>Understand the trust model.</h2><p class="muted">A working research prototype, with explicit boundaries.</p></div>
-        <div class="questions">
-          <details open><summary>Who can see my order?</summary><p>Before the reveal round, only a hash is public. Nobody, including our nodes, can read the order until its drand round arrives. After that it is public on chain by design, but the batch is already closed to other swaps.</p></details>
-          <details><summary>What stops a bot after the reveal?</summary><p>The pool itself. The Uniswap v4 hook rejects every swap except the batch settlement, and every order in a batch gets the same price. A bot could still commit its own blind order into a batch, which costs it a bond if it doesn’t reveal. drand uses BLS, so the timelock is not post-quantum; it only has to hold for about 30 seconds.</p></details>
-          <details><summary>Is this ready for real funds?</summary><p>No. LeanSeal is an unaudited research prototype. It runs on our local chain and on the public hackathon devnet with test tokens.</p></details>
-          <details><summary>What do I need to run the demo?</summary><p>The local chain, two patched alt-mempool nodes running the sealed mempool, and the console API. For the devnet, two more nodes pointed at it. The console shows what is running.</p></details>
-        </div>
-      </section>
-
-      <section class="closing container"><h2>Sign for tomorrow.<br />Seal for today.</h2><a class="pill" href={CONSOLE_URL}>Open leanseal <span aria-hidden="true">→</span></a><p class="muted">Research prototype · Local chain &amp; devnet</p></section>
-    </main>
-    <LeanSealFooter client:visible consoleUrl={CONSOLE_URL} />
-  </body>
-</html>
+<Landing>
+  <Hero />
+  <Intro />
+  <Platform />
+  <Connection />
+  <Showcase />
+  <Demo />
+  <Access />
+  <Closing />
+</Landing>

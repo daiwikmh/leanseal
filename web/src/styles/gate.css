@@ -1,0 +1,99 @@
+.gate {
+  min-height: 100dvh;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  padding: 0;
+  gap: 0;
+  background: #000;
+  color: #fff;
+  text-align: left;
+  align-content: stretch;
+  justify-items: stretch;
+}
+.gate__stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-right: 1px solid rgba(255, 255, 255, 0.08);
+}
+.gate__brand { color: inherit; text-decoration: none; position: absolute; top: 32px; left: 36px; display: inline-flex; align-items: center; gap: 6px; font-size: 22px; font-weight: 650; letter-spacing: -0.04em; z-index: 2; }
+.gate__brand svg { width: 20px; height: 20px; }
+.gate__brand em { font-style: normal; opacity: 0.55; font-weight: 400; }
+.gate__legal { position: absolute; left: 36px; bottom: 28px; font-size: 11px; color: rgba(255, 255, 255, 0.35); z-index: 2; }
+.gate__lines i { position: absolute; background: rgba(255, 255, 255, 0.14); opacity: 0; animation: gate-fade 1.2s ease 0.1s forwards; }
+.gate__lines i:nth-child(1) { left: 50%; top: 0; bottom: 0; width: 1px; transform-origin: top; animation: gate-grow-y 1.4s cubic-bezier(0.6, 0, 0.2, 1) 0.1s forwards; }
+.gate__lines i:nth-child(2) { top: 50%; left: 0; right: 0; height: 1px; transform-origin: left; animation: gate-grow-x 1.4s cubic-bezier(0.6, 0, 0.2, 1) 0.25s forwards; }
+.gate__lines i:nth-child(3), .gate__lines i:nth-child(4) { left: -20%; right: -20%; top: 50%; height: 1px; background: rgba(255, 255, 255, 0.07); }
+.gate__lines i:nth-child(3) { transform: rotate(40deg); }
+.gate__lines i:nth-child(4) { transform: rotate(-40deg); }
+.gate__logo { position: relative; z-index: 1; width: clamp(150px, 24vw, 290px); height: auto; color: #fff; overflow: visible; }
+.gate__logo path { stroke-dasharray: 1 1; stroke-dashoffset: 1; opacity: 0; animation: gate-draw 0.5s cubic-bezier(0.33, 1, 0.68, 1) forwards, gate-glow 4.2s ease-in-out infinite; animation-delay: calc(var(--row, 0) * 70ms + 0.5s), calc(2.6s + var(--row, 0) * 160ms); }
+@keyframes gate-draw { 0% { stroke-dashoffset: 1; opacity: 0; } 4% { opacity: 1; } 100% { stroke-dashoffset: 0; opacity: 1; } }
+@keyframes gate-glow { 0%, 100% { opacity: 1; } 45% { opacity: 0.35; } }
+@keyframes gate-fade { to { opacity: 1; } }
+@keyframes gate-grow-y { from { opacity: 1; transform: scaleY(0); } to { opacity: 1; transform: scaleY(1); } }
+@keyframes gate-grow-x { from { opacity: 1; transform: scaleX(0); } to { opacity: 1; transform: scaleX(1); } }
+
+.gate__panel { display: grid; padding: 20px; }
+.gate__card { position: relative; display: grid; grid-template-rows: auto 1fr; padding: 28px 32px; border-radius: 28px; background: #121212; border: 1px solid rgba(255, 255, 255, 0.06); }
+.gate__top { display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 28px; }
+.gate__dev { padding: 4px 10px; border-radius: 999px; background: rgba(123, 115, 240, 0.25); color: #d9d4ff; font-size: 11px; letter-spacing: 0.04em; }
+.gate__form { grid-row: 2; display: grid; align-content: center; justify-items: start; gap: 22px; padding-bottom: 24px; }
+.gate__title { margin: 0; font-size: clamp(44px, 6vw, 72px); font-weight: 400; letter-spacing: -0.05em; line-height: 1; }
+.gate__hint { margin: 0; font-size: 15px; color: rgba(255, 255, 255, 0.55); }
+.gate__fields { display: grid; grid-template-columns: 1fr 1fr; gap: 28px; margin-top: 8px; width: 100%; }
+.gfield { display: grid; gap: 6px; }
+.gfield span { font-size: 11px; color: rgba(255, 255, 255, 0.55); }
+.gfield input { padding: 8px 0; border: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.28); border-radius: 0; background: transparent; font: inherit; font-size: 19px; color: #fff; outline: none; width: 100%; }
+.gfield input::placeholder { color: rgba(255, 255, 255, 0.28); }
+.gfield input:focus { border-bottom-color: #fff; }
+.gate__status { min-height: 18px; margin: 0; width: 100%; font-size: 13px; color: rgba(255, 255, 255, 0.6); }
+.gate__status[data-tone="error"] { color: #ec6f5c; }
+.gate__actions { display: grid; gap: 10px; width: 100%; max-width: 420px; }
+.gate__go, .gate__secondary { height: 52px; border-radius: 26px; font: inherit; font-size: 15px; font-weight: 600; cursor: pointer; transition: background 0.15s ease, opacity 0.15s ease; }
+.gate__go { border: 0; background: #fff; color: #000; }
+.gate__go:hover { background: #e6e4f0; }
+.gate__go:disabled { opacity: 0.5; cursor: default; }
+.gate__secondary { border: 1px solid rgba(255, 255, 255, 0.28); background: transparent; color: #fff; }
+.gate__secondary:hover { background: rgba(255, 255, 255, 0.08); }
+.gate__missing { width: 100%; max-width: 420px; padding: 14px 16px; border-radius: 14px; background: rgba(236, 111, 92, 0.12); }
+.gate__missing p { margin: 4px 0 0; font-size: 13px; line-height: 1.45; color: rgba(255, 255, 255, 0.7); }
+
+@media (max-width: 860px) {
+  .gate { grid-template-columns: minmax(0, 1fr); grid-template-rows: 38vh auto; }
+  .gate__stage { border-right: 0; border-bottom: 1px solid rgba(255, 255, 255, 0.08); }
+  .gate__logo { width: clamp(110px, 32vw, 170px); }
+  .gate__panel { padding: 12px; }
+  .gate__card { padding: 22px 20px; }
+  .gate__fields { grid-template-columns: 1fr; gap: 18px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .gate__logo path, .gate__lines i { animation: none; opacity: 1; stroke-dashoffset: 0; transform: none; }
+}
+
+.gate__logo path:nth-child(1) { --row: 0; }
+.gate__logo path:nth-child(2) { --row: 1; }
+.gate__logo path:nth-child(3) { --row: 2; }
+.gate__logo path:nth-child(4) { --row: 2; }
+.gate__logo path:nth-child(5) { --row: 3; }
+.gate__logo path:nth-child(6) { --row: 3; }
+.gate__logo path:nth-child(7) { --row: 3; }
+.gate__logo path:nth-child(8) { --row: 4; }
+.gate__logo path:nth-child(9) { --row: 4; }
+.gate__logo path:nth-child(10) { --row: 5; }
+.gate__logo path:nth-child(11) { --row: 5; }
+.gate__logo path:nth-child(12) { --row: 5; }
+.gate__logo path:nth-child(13) { --row: 6; }
+.gate__logo path:nth-child(14) { --row: 7; }
+.gate__lines { position: absolute; inset: 0; pointer-events: none; }
+.gate__dev { white-space: nowrap; }
+
+.gfield--check { display: flex; align-items: center; gap: 10px; }
+.gfield--check input { width: auto; }
+[data-gate-import-block]:not([hidden]) { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 14px; }
+[data-gate-import-fields]:not([hidden]) { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 24px; }
+[data-gate-import-fields] .gate__hint { grid-column: 1 / -1; margin: 0; }
+
+.gate__link { background: none; border: 0; padding: 12px 0; font: inherit; font-size: 13px; color: rgba(255, 255, 255, 0.7); cursor: pointer; text-align: center; }
+.gate__link:hover { color: #fff; }

@@ -1,0 +1,131 @@
+---
+import { countries } from "../data/countries";
+import { einReasons, industries, principalActivities, exciseItems } from "shared";
+
+const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+const steps = [
+  ["founder", "About you"],
+  ["company", "Company"],
+  ["owners", "Owners"],
+  ["ein", "Tax ID"],
+];
+---
+
+<div class="card formation" data-formation>
+  <span class="panel__label">Optional · Form a US company</span>
+  <p class="panel__lede" data-formation-intro>Need a US entity for clients, Stripe or a bank? File a Wyoming LLC or Delaware C-Corp with the same details doola and Stripe Atlas ask for. Your answers are encrypted; only a hash goes on NEAR. Payments work without this.</p>
+  <button type="button" class="btn btn--primary btn--sm" data-formation-start>Start formation</button>
+  <form class="formation__form" data-formation-form novalidate hidden>
+        <ol class="intake-steps" data-intake-steps>
+          {steps.map(([key, label], i) => <li data-step-tab={key} class={i === 0 ? "is-now" : ""}><span>0{i + 1}</span>{label}</li>)}
+        </ol>
+
+        <fieldset class="intake-step" data-step="founder">
+          <legend class="intake-legend">About you</legend>
+          <div class="gate__fields">
+            <label class="gfield"><span>Legal first name (as on ID)</span><input name="founder.first_name" autocomplete="given-name" /></label>
+            <label class="gfield"><span>Legal last name</span><input name="founder.last_name" autocomplete="family-name" /></label>
+            <label class="gfield"><span>Email · the IRS signature link goes here</span><input name="founder.email" type="email" autocomplete="email" /></label>
+            <label class="gfield"><span>Phone, international format</span><input name="founder.phone" type="tel" autocomplete="tel" placeholder="+91 98765 43210" /></label>
+            <label class="gfield"><span>Country you live in</span><select name="founder.country"><option value="">Choose…</option>{countries.map((c) => <option value={c}>{c}</option>)}</select></label>
+            <label class="gfield"><span>Nationality (optional)</span><select name="founder.nationality"><option value="">Choose…</option>{countries.map((c) => <option value={c}>{c}</option>)}</select></label>
+            <label class="gfield"><span>Date of birth (optional, for banking later)</span><input name="founder.date_of_birth" type="date" /></label>
+            <label class="gfield">
+              <span>US tax ID</span>
+              <select name="founder.tax_id_type"><option value="none">I don't have an SSN or ITIN</option><option value="ssn">I have an SSN</option><option value="itin">I have an ITIN</option></select>
+            </label>
+            <label class="gfield gfield--wide" data-show-when="founder.tax_id_type!=none" hidden><span>SSN or ITIN</span><input name="founder.tax_id" inputmode="numeric" autocomplete="off" placeholder="XXX-XX-XXXX" /></label>
+            <span class="intake-sub gfield--wide">Home address</span>
+            <label class="gfield gfield--wide"><span>Street address</span><input name="founder.address.line1" autocomplete="address-line1" /></label>
+            <label class="gfield"><span>Apartment, suite (optional)</span><input name="founder.address.line2" autocomplete="address-line2" /></label>
+            <label class="gfield"><span>City</span><input name="founder.address.city" autocomplete="address-level2" /></label>
+            <label class="gfield"><span>State / region</span><input name="founder.address.region" autocomplete="address-level1" /></label>
+            <label class="gfield"><span>Postal code</span><input name="founder.address.postal" autocomplete="postal-code" /></label>
+            <label class="gfield gfield--wide"><span>Country</span><select name="founder.address.country"><option value="">Choose…</option>{countries.map((c) => <option value={c}>{c}</option>)}</select></label>
+          </div>
+        </fieldset>
+
+        <fieldset class="intake-step" data-step="company" hidden>
+          <legend class="intake-legend">Company</legend>
+          <div class="gate__fields">
+            <label class="gfield gfield--wide">
+              <span>What will the company do?</span>
+              <select name="plan"><option value="services">Sell services or software to clients</option><option value="saas">Run a product with subscriptions</option><option value="venture">Raise money from investors</option></select>
+            </label>
+            <div class="advice gfield--wide" data-advice hidden>
+              <span class="advice__label">opencash advisor · NEAR AI</span>
+              <b class="advice__pick" data-advice-pick></b>
+              <p class="advice__why" data-advice-why></p>
+              <ul class="advice__filings" data-advice-filings></ul>
+            </div>
+            <label class="gfield">
+              <span>Entity type</span>
+              <select name="company.jurisdiction"><option value="wy-llc">Wyoming LLC</option><option value="de-ccorp">Delaware C-Corp</option></select>
+            </label>
+            <div class="gfield"><span>&nbsp;</span><button type="button" class="gate__secondary" data-ask>Ask the advisor</button></div>
+            <label class="gfield"><span>Company name, 1st choice</span><input name="company.names.0" data-name-input placeholder="Acme Studio LLC" /></label>
+            <label class="gfield"><span>2nd choice (if taken)</span><input name="company.names.1" data-name-input placeholder="Acme Labs LLC" /></label>
+            <label class="gfield"><span>3rd choice (optional)</span><input name="company.names.2" data-name-input placeholder="Acme Works LLC" /></label>
+            <label class="gfield"><span>Industry</span><select name="company.industry">{industries.map((i) => <option value={i}>{i}</option>)}</select></label>
+            <label class="gfield"><span>What it does, ≤ 50 characters</span><input name="company.description" maxlength="50" placeholder="Design services for startups" /></label>
+            <label class="gfield"><span>Website (optional)</span><input name="company.website" type="url" placeholder="https://acme.studio" /></label>
+            <label class="gfield"><span>Fiscal year ends</span><select name="company.fiscal_year_end_month">{months.map((m, i) => <option value={i + 1} selected={i === 11}>{m}</option>)}</select></label>
+            <label class="gfield gfield--wide gfield--check"><input type="checkbox" name="company.use_agent_address" checked /> <span>Use the registered agent's address as the business address (no US address needed)</span></label>
+            <div class="gate__fields gfield--wide" data-show-when="company.use_agent_address=false" hidden>
+              <label class="gfield gfield--wide"><span>Business street address</span><input name="company.business_address.line1" /></label>
+              <label class="gfield"><span>Suite (optional)</span><input name="company.business_address.line2" /></label>
+              <label class="gfield"><span>City</span><input name="company.business_address.city" /></label>
+              <label class="gfield"><span>State</span><input name="company.business_address.region" /></label>
+              <label class="gfield"><span>ZIP code</span><input name="company.business_address.postal" /></label>
+              <label class="gfield gfield--wide"><span>Country</span><input name="company.business_address.country" value="United States" /></label>
+            </div>
+          </div>
+        </fieldset>
+
+        <fieldset class="intake-step" data-step="owners" hidden>
+          <legend class="intake-legend">Owners</legend>
+          <div data-when-entity="wy-llc">
+            <div class="gate__fields">
+              <label class="gfield gfield--wide"><span>Who runs the LLC?</span><select name="llc.management"><option value="member">The members (most solo founders)</option><option value="manager">Appointed managers</option></select></label>
+            </div>
+            <span class="intake-sub">Members and ownership · must add up to 100%</span>
+            <div class="owner-rows" data-owners="llc.members"></div>
+            <button type="button" class="gate__link" data-add-owner="llc.members">+ Add a member</button>
+          </div>
+          <div data-when-entity="de-ccorp" hidden>
+            <div class="gate__fields">
+              <label class="gfield"><span>President</span><input name="corp.president" /></label>
+              <label class="gfield"><span>Secretary</span><input name="corp.secretary" /></label>
+              <label class="gfield"><span>Treasurer</span><input name="corp.treasurer" /></label>
+              <label class="gfield"><span>Directors, comma separated</span><input name="corp.directors" /></label>
+              <label class="gfield"><span>Authorized shares</span><input name="corp.authorized_shares" inputmode="numeric" value="10000000" /></label>
+              <label class="gfield"><span>Par value per share (USD)</span><input name="corp.par_value" value="0.00001" /></label>
+            </div>
+            <span class="intake-sub">Shareholders · must add up to 100%</span>
+            <div class="owner-rows" data-owners="corp.shareholders"></div>
+            <button type="button" class="gate__link" data-add-owner="corp.shareholders">+ Add a shareholder</button>
+          </div>
+        </fieldset>
+
+        <fieldset class="intake-step" data-step="ein" hidden>
+          <legend class="intake-legend">Tax ID (EIN)</legend>
+          <div class="gate__fields">
+            <label class="gfield gfield--wide gfield--check"><input type="checkbox" name="ein.order" checked /> <span>Apply for an EIN (needed for a US bank, Stripe and taxes). Without an SSN the IRS form SS-4 is signed by you and faxed; it takes days to weeks.</span></label>
+            <label class="gfield"><span>Reason for applying</span><select name="ein.reason">{einReasons.map((r) => <option value={r}>{r}</option>)}</select></label>
+            <label class="gfield"><span>Principal activity</span><select name="ein.principal_activity">{principalActivities.map((a) => <option value={a}>{a}</option>)}</select></label>
+            <label class="gfield gfield--wide"><span>What you sell or the service you provide</span><input name="ein.line_of_business" placeholder="Brand and product design for software companies" /></label>
+            <label class="gfield gfield--wide gfield--check"><input type="checkbox" name="ein.expects_employees" /> <span>I expect to pay US employees (W-2) in the next 12 months</span></label>
+            <label class="gfield" data-show-when="ein.expects_employees=true" hidden><span>How many employees</span><input name="ein.employee_count" inputmode="numeric" /></label>
+            <label class="gfield" data-show-when="ein.expects_employees=true" hidden><span>First wage date</span><input name="ein.first_wage_date" type="date" /></label>
+            <label class="gfield gfield--wide gfield--check"><input type="checkbox" name="ein.excise_none" checked /> <span>None of these apply: {exciseItems.join("; ").toLowerCase()}</span></label>
+          </div>
+        </fieldset>
+
+    <p class="form-error" data-formation-status role="status"></p>
+    <div class="btn-row">
+      <button type="button" class="btn" data-prev hidden>← Back</button>
+      <button type="button" class="btn btn--primary" data-next>Continue</button>
+      <button type="submit" class="btn btn--primary" data-submit hidden>Sign and submit application</button>
+    </div>
+  </form>
+</div>

@@ -1,0 +1,49 @@
+<section class="panel" data-panel="account" hidden>
+  <div class="account-layout">
+    <div class="account-layout__actions">
+      <div class="account-group">
+        <span class="account-group__label">Business account</span>
+        <button type="button" class="setting-row" data-copy-account>
+          <span class="setting-row__icon setting-row__icon--lime">◎</span>
+          <span class="setting-row__label">Account</span>
+          <span class="setting-row__value" data-account-id>—</span>
+          <span class="setting-row__chev">⧉</span>
+        </button>
+        <a class="setting-row" data-account-explorer target="_blank" rel="noopener">
+          <span class="setting-row__icon setting-row__icon--blue">↗</span>
+          <span class="setting-row__label">View on NearBlocks</span>
+          <span class="setting-row__chev">›</span>
+        </a>
+      </div>
+      <div class="account-group">
+        <span class="account-group__label">Chat</span>
+        <div class="setting-row">
+          <span class="setting-row__icon setting-row__icon--violet">✈</span>
+          <span class="setting-row__label">Telegram</span>
+          <span class="setting-row__value" data-chat-telegram>Not configured</span>
+        </div>
+        <div class="setting-row">
+          <span class="setting-row__icon setting-row__icon--lime">◇</span>
+          <span class="setting-row__label">XMTP</span>
+          <span class="setting-row__value mono" data-chat-xmtp>Not configured</span>
+        </div>
+        <div data-chat-links></div>
+        <p class="panel__lede">Message the bot "link" and open the link it sends. Then: "pay Ada 50 USDC on base to 0x…", "request 120 from Northwind", "balance", "status". Payouts are always signed here with your passkey.</p>
+      </div>
+      <div class="account-group">
+        <span class="account-group__label">Safety</span>
+        <div class="setting-row">
+          <span class="setting-row__icon setting-row__icon--peach">✱</span>
+          <span class="setting-row__label">Signing key</span>
+          <span class="setting-row__value mono" data-account-key>—</span>
+        </div>
+        <p class="panel__lede">Derived from your passkey on each sign-in and never stored. No seed phrase to lose.</p>
+        <button type="button" class="setting-row setting-row--danger" data-sign-out>
+          <span class="setting-row__icon setting-row__icon--violet">⏻</span>
+          <span class="setting-row__label">Sign out of this browser</span>
+          <span class="setting-row__chev">›</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</section>

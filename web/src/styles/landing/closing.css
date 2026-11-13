@@ -1,0 +1,487 @@
+.site-footer {
+  padding: 70px var(--gutter) 25px;
+}
+.footer-top {
+  display: flex;
+  align-items: start;
+  gap: 50px;
+}
+.footer-top > p {
+  font-size: 13px;
+  color: var(--muted);
+  max-width: 190px;
+  margin-right: auto;
+}
+.footer-top > div {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 15px 45px;
+  font-size: 12px;
+}
+.footer-top a:hover {
+  color: var(--purple);
+}
+.footer-statement {
+  font-size: clamp(64px, 11vw, 170px);
+  font-weight: 300;
+  line-height: 0.97;
+  letter-spacing: -0.04em;
+  margin: 85px 0;
+}
+.footer-statement span {
+  color: #888092;
+}
+.footer-bottom {
+  display: flex;
+  justify-content: space-between;
+  gap: 25px;
+  border-top: 1px solid var(--line);
+  padding-top: 25px;
+  font-size: 10px;
+  color: var(--muted);
+}
+@keyframes flow {
+  to {
+    stroke-dashoffset: -940;
+  }
+}
+@media (max-width: 1000px) {
+  .section-frame {
+    margin-inline: 24px;
+    padding-inline: 36px;
+  }
+  .section-heading {
+    gap: 35px;
+  }
+  .section-heading > p {
+    max-width: 280px;
+  }
+  .application-content {
+    padding-left: 30px;
+  }
+  .issue {
+    left: 10%;
+  }
+  .verify {
+    right: 8%;
+  }
+  .collateral {
+    left: 35%;
+  }
+  .settlement {
+    right: 6%;
+  }
+  .asset-landscape h2 {
+    max-width: 350px;
+  }
+  .tech-strip {
+    flex-wrap: wrap;
+    padding: 25px 0;
+  }
+  .navigation {
+    gap: 23px;
+  }
+  .nav-links {
+    gap: 18px;
+  }
+}
+@media (max-width: 700px) {
+  html {
+    scroll-padding-top: 95px;
+  }
+  .site-header {
+    top: 14px;
+    padding-inline: 16px;
+  }
+  .navigation {
+    width: 100%;
+    padding: 16px;
+    gap: 18px;
+    justify-content: space-between;
+    flex-wrap: wrap;
+  }
+  .wordmark {
+    font-size: 24px;
+  }
+  .menu-toggle {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: none;
+    color: white;
+    padding: 5px;
+    margin-left: auto;
+    font-size: 13px;
+  }
+  .menu-toggle span {
+    font-size: 20px;
+  }
+  .nav-cta {
+    font-size: 11px;
+    gap: 3px;
+  }
+  .nav-cta .arrow {
+    width: 15px;
+  }
+  .nav-links {
+    display: none;
+    order: 4;
+    width: 100%;
+    padding: 16px 0 8px;
+    border-top: 1px solid #ffffff25;
+    justify-content: space-between;
+  }
+  .navigation.menu-open .nav-links {
+    display: flex;
+  }
+  .hero {
+    min-height: 670px;
+    height: 94svh;
+  }
+  .hero h1 {
+    font-size: clamp(42px, 9.5vw, 66px);
+    line-height: 1.05;
+  }
+  .mobile-break {
+    display: block;
+  }
+  .hero-heading {
+    bottom: 18%;
+    left: 18px;
+    right: 18px;
+  }
+  .hero-heading p {
+    font-size: 13px;
+    margin-top: 20px;
+  }
+  .hero-caption {
+    left: 20px;
+    bottom: 25px;
+    font-size: 8px;
+    max-width: 260px;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .scroll-cue {
+    right: 20px;
+  }
+  .scan-controls {
+    top: 112px;
+    right: 20px;
+    gap: 15px;
+    font-size: 9px;
+  }
+  .scan-toggle {
+    padding: 8px;
+    font-size: 10px;
+  }
+  .scan-hint {
+    font-size: 0;
+  }
+  .scan-hint:before {
+    content: "Touch to discover";
+    font-size: 9px;
+  }
+  .section-frame {
+    margin-inline: 16px;
+    padding-inline: 20px;
+  }
+  .intro {
+    padding-top: 95px;
+    padding-bottom: 40px;
+    min-height: 550px;
+  }
+  .intro h2 {
+    font-size: clamp(33px, 7.5vw, 48px);
+    line-height: 1.18;
+  }
+  .intro h2 br {
+    display: none;
+  }
+  .intro-bottom {
+    flex-direction: column;
+    align-items: start;
+    gap: 24px;
+    margin-top: 55px;
+  }
+  .intro-bottom p {
+    font-size: 13px;
+  }
+  .section-name {
+    font-size: 9px;
+  }
+  .asset-landscape {
+    height: 860px;
+    margin-top: 40px;
+  }
+  .asset-landscape h2 {
+    left: 30px;
+    bottom: 65px;
+    max-width: 90%;
+    font-size: 38px;
+  }
+  .pixel-edge i {
+    height: 40px;
+  }
+  .pixel-edge i:nth-child(2) {
+    height: 80px;
+  }
+  .pin-content {
+    width: 180px;
+    padding: 12px;
+  }
+  .pin-title {
+    font-size: 12px;
+  }
+  .pin-description {
+    font-size: 11px;
+  }
+  .asset-pin {
+    gap: 12px;
+  }
+  .issue {
+    left: 9%;
+    top: 18%;
+  }
+  .verify {
+    right: 8%;
+    top: 34%;
+  }
+  .collateral {
+    left: 9%;
+    top: 49%;
+  }
+  .settlement {
+    right: 8%;
+    top: 63%;
+  }
+  .landscape-caption {
+    font-size: 8px;
+    left: 30px;
+    right: auto;
+    bottom: 25px;
+  }
+  .section-heading {
+    flex-direction: column;
+    gap: 25px;
+    align-items: start;
+  }
+  .section-heading > p {
+    max-width: 100%;
+    font-size: 13px;
+  }
+  .connection {
+    padding-top: 85px;
+  }
+  .connection-graphic {
+    height: 290px;
+    margin-top: 45px;
+  }
+  .connection-label {
+    font-size: 8px;
+    padding: 10px 8px;
+  }
+  .diamond-stack {
+    width: 88px;
+    height: 88px;
+  }
+  .diamond-stack i {
+    inset: 7px;
+  }
+  .diamond-stack i:nth-child(2) {
+    inset: 14px;
+  }
+  .diamond-stack i:nth-child(3) {
+    inset: 21px;
+  }
+  .center-mark {
+    width: 26px;
+    height: 26px;
+    margin-bottom: 7px;
+  }
+  .connection-center strong {
+    font-size: 30px;
+  }
+  .connection-center > span {
+    font-size: 6px;
+  }
+  .connection-lines {
+    opacity: 0.65;
+  }
+  .tech-strip {
+    gap: 25px;
+    font-size: 11px;
+  }
+  .tech-strip > span:first-child {
+    width: 100%;
+  }
+  .tech-strip > span:last-child {
+    font-size: 10px;
+  }
+  .chain-mark {
+    font-size: 26px;
+  }
+  .chain-mark b {
+    font-size: 19px;
+  }
+  .applications {
+    padding-top: 85px;
+    padding-bottom: 40px;
+  }
+  .application-tabs {
+    margin-top: 35px;
+  }
+  .application-tabs button {
+    font-size: 11px;
+    padding: 16px 6px;
+    gap: 5px;
+  }
+  .application-panel {
+    grid-template-columns: 1fr;
+    margin-top: 20px;
+  }
+  .application-image {
+    min-height: 310px;
+  }
+  .application-content {
+    padding: 30px 0 15px;
+  }
+  .application-content h3 {
+    margin-top: 20px;
+  }
+  .application-content > p {
+    font-size: 13px;
+  }
+  .section-footnote {
+    text-align: left;
+    font-size: 10px;
+  }
+  .demo-section {
+    padding-block: 55px 65px;
+  }
+  .demo-workspace {
+    grid-template-columns: 1fr;
+    margin-top: 35px;
+  }
+  .demo-summary {
+    padding: 25px;
+    border-right: 0;
+    border-bottom: 1px solid var(--line);
+    position: relative;
+    min-height: 190px;
+  }
+  .demo-summary h3 {
+    font-size: 25px;
+    max-width: 70%;
+  }
+  .demo-summary p {
+    max-width: 70%;
+    font-size: 11px;
+  }
+  .demo-asset-mark {
+    position: absolute;
+    right: 12px;
+    top: 42px;
+    width: 85px;
+    margin: 0;
+  }
+  .demo-caption {
+    display: none;
+  }
+  .demo-flow {
+    padding: 15px 22px 25px;
+  }
+  .workflow-steps li {
+    font-size: 12px;
+    gap: 12px;
+    padding: 22px 0;
+  }
+  .step-state {
+    font-size: 9px;
+  }
+  .demo-next p {
+    font-size: 11px;
+  }
+  .dark-button {
+    font-size: 12px;
+    gap: 14px;
+  }
+  .reset-button {
+    padding: 15px 8px;
+  }
+  .access-section {
+    padding-block: 35px 85px;
+  }
+  .access-columns {
+    grid-template-columns: 1fr;
+    margin-top: 35px;
+  }
+  .access-columns article {
+    padding: 30px 0;
+  }
+  .access-columns article + article {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+  .access-columns p {
+    font-size: 13px;
+  }
+  .closing {
+    height: 520px;
+  }
+  .closing h2 {
+    font-size: 43px;
+  }
+  .closing .light-button {
+    font-size: 12px;
+  }
+  .waitlist input {
+    width: 100%;
+  }
+  .footer-top {
+    flex-wrap: wrap;
+    gap: 25px;
+  }
+  .footer-top > p {
+    max-width: 160px;
+    font-size: 11px;
+    margin-right: 0;
+  }
+  .footer-top > div {
+    width: 100%;
+    gap: 15px;
+    font-size: 12px;
+    margin-top: 15px;
+  }
+  .site-footer {
+    padding: 45px 25px 25px;
+  }
+  .footer-statement {
+    font-size: 18vw;
+    margin: 65px 0;
+  }
+  .footer-bottom {
+    flex-wrap: wrap;
+    font-size: 9px;
+    gap: 15px;
+  }
+  .footer-bottom > span:nth-child(2) {
+    order: 3;
+    width: 100%;
+  }
+  .footer-bottom a {
+    margin-left: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *:before,
+  *:after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

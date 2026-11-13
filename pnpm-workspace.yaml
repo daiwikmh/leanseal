@@ -1,0 +1,5 @@
+packages:
+  - mobile
+  - backend
+  - web
+  - packages/*

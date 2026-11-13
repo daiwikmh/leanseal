@@ -1,0 +1,39 @@
+---
+import App from "../layouts/App.astro";
+import Mark from "../components/Mark.astro";
+---
+
+<App title="Sign agreement · opencash">
+  <main class="dash pay">
+    <div class="pay__card sign__card">
+      <div class="pay__head">
+        <a class="wordmark" href="/"><Mark />open<span>cash</span></a>
+        <span data-sign-status class="tag">Loading…</span>
+      </div>
+      <div class="card">
+        <span class="card__label" data-sign-company>—</span>
+        <b class="company__name" data-sign-title>—</b>
+        <div data-sign-summary></div>
+      </div>
+      <div class="card" data-sign-connect hidden>
+        <span class="panel__label">Sign in to read and sign</span>
+        <p class="panel__lede">Use the NEAR account listed as a party. opencash never sees your keys.</p>
+        <div class="btn-row" style="margin-top:var(--sp-md)">
+          <button type="button" class="btn btn--primary" data-connect-wallet>Connect a NEAR wallet</button>
+          <button type="button" class="btn" data-use-passkey>Use my opencash passkey</button>
+        </div>
+      </div>
+      <div class="card" data-sign-doc hidden>
+        <span class="panel__label" data-signer>—</span>
+        <div data-sign-doc-body></div>
+        <label class="consent" data-consent-row hidden><input type="checkbox" data-consent /> <span data-consent-text></span></label>
+        <button type="button" class="btn btn--primary" data-sign-go hidden disabled>Sign</button>
+      </div>
+      <p class="status-line" data-sign-message role="status"></p>
+      <p class="pay__trust">You sign this document's SHA-256 fingerprint with your own NEAR account key (NEP-413). No transaction or gas needed. The document stays encrypted.</p>
+    </div>
+  </main>
+  <script>
+    import "../scripts/sign/index";
+  </script>
+</App>

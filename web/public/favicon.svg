@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="10" fill="#191a1c"/>
+  <g transform="translate(9 9.2) scale(0.07395)" fill="none" stroke="#f3ece1" stroke-width="46" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M219 23h184"/>
+    <path d="M111 103h400"/>
+    <path d="M48 183h224"/>
+    <path d="M350 183h224"/>
+    <path d="M574 183H369l82 80h148"/>
+    <path d="M23 263h168"/>
+    <path d="M431 263h168"/>
+    <path d="M23 355h168"/>
+    <path d="M431 355h168"/>
+    <path d="M599 355H451l-82 80h205"/>
+    <path d="M48 435h224"/>
+    <path d="M350 435h224"/>
+    <path d="M111 515h400"/>
+    <path d="M219 595h184"/>
+  </g>
+</svg>

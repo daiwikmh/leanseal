@@ -1,0 +1,36 @@
+:root {
+  --paper: #0b0f0e;
+  --ink: #e8ece9;
+  --muted: #858589;
+  --line: #2a3330;
+  --surface: #131917;
+  --surface-hover: #1b2220;
+  --surface-line: #222a27;
+  --up: #3ddc84;
+  --down: #ff6b6b;
+  --accent: #7165ed;
+  --on-accent: #ffffff;
+  --purple: var(--accent);
+  --trade-green: var(--up);
+  --trade-red: var(--down);
+  --lime: #b4f58c;
+  --lime-ink: #2d6a1e;
+  --wallet: #0c0c0c;
+  --on-wallet: #ffffff;
+
+  --font-body: "DM Sans", sans-serif;
+
+  font-family: var(--font-body);
+  color: var(--ink);
+  background: var(--paper);
+}
+
+body {
+  background: var(--paper);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}

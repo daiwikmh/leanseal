@@ -1,0 +1,27 @@
+import assert from "node:assert/strict";
+import { ed25519 } from "@noble/curves/ed25519.js";
+import { base58 } from "@scure/base";
+import { decodeUserHandle, encodeUserHandle, nearKeyFromPrf, signWithNearKey, verifyNearSignature } from "./passkey.js";
+import { fromUnits, invoiceTotal, toUnits } from "./company.js";
+
+const prf = new Uint8Array(32).fill(7);
+const a = nearKeyFromPrf(prf);
+const b = nearKeyFromPrf(new Uint8Array(32).fill(7));
+const c = nearKeyFromPrf(new Uint8Array(32).fill(8));
+assert.equal(a.publicKey, b.publicKey, "same PRF gives same key");
+assert.notEqual(a.publicKey, c.publicKey, "different PRF gives different key");
+assert.ok(a.publicKey.startsWith("ed25519:"));
+const secret = base58.decode(a.secretKey.slice(8));
+assert.equal(secret.length, 64);
+const message = new TextEncoder().encode("opencash");
+const signature = ed25519.sign(message, secret.slice(0, 32));
+assert.ok(ed25519.verify(signature, message, base58.decode(a.publicKey.slice(8))), "signature verifies");
+assert.equal(decodeUserHandle(encodeUserHandle("acme.opencash.near")), "acme.opencash.near");
+assert.equal(toUnits("250.5"), "250500000");
+assert.equal(fromUnits("250500000"), "250.5");
+assert.equal(invoiceTotal([{ description: "a", amount: "100" }, { description: "b", amount: "0.25" }]), "100250000");
+const sig = signWithNearKey(a.secretKey, "hello");
+assert.ok(verifyNearSignature(a.publicKey, "hello", sig), "own signature verifies");
+assert.ok(!verifyNearSignature(a.publicKey, "hellO", sig), "tampered message fails");
+assert.ok(!verifyNearSignature(c.publicKey, "hello", sig), "other key fails");
+console.log("passkey + units checks ok", a.publicKey);

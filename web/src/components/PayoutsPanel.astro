@@ -1,0 +1,39 @@
+<section class="panel" data-panel="payouts" hidden>
+  <div class="home-grid payouts-grid">
+    <div class="card">
+      <div class="section-row">
+        <span class="panel__label">Send USDC to any chain</span>
+        <div class="switcher switcher--tight" role="group" aria-label="Payout mode" data-payout-mode>
+          <button type="button" aria-pressed="true" data-mode="single">One person</button>
+          <button type="button" aria-pressed="false" data-mode="payroll">Payroll</button>
+        </div>
+      </div>
+      <p class="panel__lede">You pay in USDC from your NEAR account; NEAR Intents delivers the token and chain each person wants. One passkey signature, no gas.</p>
+      <label class="field" data-payroll-only hidden style="margin-top:var(--sp-md)"><span>Batch name</span><input data-batch-label placeholder="November payroll" /></label>
+      <div class="payout-rows" data-payout-rows></div>
+      <div class="btn-row" style="margin-top:var(--sp-sm)">
+        <button type="button" class="btn btn--quiet" data-add-row data-payroll-only hidden>+ Add a person</button>
+        <select class="btn btn--quiet" data-payee-pick><option value="">+ From saved payees</option></select>
+        <label class="btn btn--quiet" data-payroll-only hidden>Import CSV<input type="file" accept=".csv,text/csv" data-payroll-file hidden /></label>
+      </div>
+      <p class="quote-line" data-payroll-only hidden>CSV columns: name, amount, chain, token, address (e.g. <code>Ada Okafor,1200.00,base,USDC,0x…</code>)</p>
+      <div class="line-total"><span>Total</span><span data-payout-total>$0.00</span></div>
+      <p class="form-error" data-payout-error></p>
+      <div class="btn-row">
+        <button type="button" class="btn btn--primary" data-payout-quote>Get quotes</button>
+      </div>
+      <div data-payout-quotes hidden>
+        <span class="panel__label">Quotes · valid for 60 minutes</span>
+        <div class="line-items" data-payout-quote-rows></div>
+        <label class="consent"><input type="checkbox" data-payout-confirm /> <span>Send these payouts. USDC leaves this account now and cannot be recalled; failed deliveries refund to it.</span></label>
+        <button type="button" class="btn btn--primary" data-payout-send disabled>Send with passkey</button>
+      </div>
+    </div>
+    <div class="home-right">
+      <div class="section-row"><h3 class="panel__subtitle" style="margin:0">Payout history</h3><button type="button" class="btn btn--sm" data-payout-export>Export CSV</button></div>
+      <div data-payout-table class="table-wrap table-wrap--loading">Loading…</div>
+      <h3 class="panel__subtitle">Saved payees</h3>
+      <div data-payee-list class="table-wrap"></div>
+    </div>
+  </div>
+</section>

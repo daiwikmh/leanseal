@@ -1,7 +1,0 @@
-{
-  "redirects": [
-    { "source": "/dashboard", "destination": "https://129-212-188-106.sslip.io/dashboard", "permanent": false },
-    { "source": "/dashboard/:path*", "destination": "https://129-212-188-106.sslip.io/dashboard", "permanent": false },
-    { "source": "/classic", "destination": "https://129-212-188-106.sslip.io/classic", "permanent": false }
-  ]
-}

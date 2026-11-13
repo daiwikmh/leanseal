@@ -1,0 +1,45 @@
+---
+import Mark from "./Mark.astro";
+import { countries } from "../data/countries";
+---
+
+<div class="gate" data-gate>
+  <section class="gate__stage" aria-hidden="true">
+    <a class="gate__brand" href="/"><Mark />open<em>cash</em></a>
+    <div class="gate__lines"><i></i><i></i><i></i><i></i></div>
+    <Mark class="gate__logo" />
+    <small class="gate__legal">Remittance for open worlds</small>
+  </section>
+  <section class="gate__panel">
+    <div class="gate__card">
+      <div class="gate__top"><span class="gate__dev">{import.meta.env.DEV ? "NEAR mainnet · dev mode" : "NEAR mainnet"}</span></div>
+
+      <form class="gate__form" data-start-form novalidate>
+        <h1 class="gate__title">Payments for everyone</h1>
+        <p class="gate__hint">Open a USDC business account on NEAR with one passkey. Invoice, take payments, pay people anywhere. No seed phrase, no gas.</p>
+        <div class="gate__fields">
+          <label class="gfield"><span>Your name</span><input name="founder" autocomplete="name" placeholder="Ada Okafor" /></label>
+          <label class="gfield"><span>Business name</span><input name="business" placeholder="Acme Studio" /></label>
+          <label class="gfield"><span>Account handle</span><input name="handle" autocapitalize="none" spellcheck="false" placeholder="acme" /><small class="gfield__hint" data-handle-preview>acme.opencash.near</small></label>
+          <label class="gfield"><span>Country</span><select name="country"><option value="">Choose…</option>{countries.map((c) => <option value={c}>{c}</option>)}</select></label>
+        </div>
+        <p class="gate__status" data-gate-status role="status"></p>
+        <div class="gate__actions">
+          <button type="submit" class="gate__go" data-start>Create my account with a passkey</button>
+          <button type="button" class="gate__link" data-show-signin>I already have an account</button>
+          {import.meta.env.DEV && <button type="button" class="gate__secondary" data-dev-login>Dev mode · skip passkey</button>}
+        </div>
+      </form>
+
+      <form class="gate__form" data-signin-form hidden>
+        <h1 class="gate__title">Welcome back</h1>
+        <p class="gate__hint">Use your passkey. It works on any device it syncs to.</p>
+        <p class="gate__status" data-signin-status role="status"></p>
+        <div class="gate__actions">
+          <button type="submit" class="gate__go">Sign in with passkey</button>
+          <button type="button" class="gate__link" data-show-start>Create an account</button>
+        </div>
+      </form>
+    </div>
+  </section>
+</div>

@@ -1,0 +1,20 @@
+---
+import { steps } from "../../data/landing";
+---
+
+<section class="asset-landscape section-frame" id="platform" aria-labelledby="landscape-title">
+  <div class="section-heading"><span class="section-name">BUILT ON NEAR</span><h2 id="landscape-title">Open it. Get paid.<br /><span>Pay out. Reconcile.</span></h2></div>
+  <div class="asset-pins">
+    {steps.map((step, i) => (
+      <article class={`asset-pin ${step.position}`}>
+        <div class="pin-insert" aria-hidden="true"><span>{step.insert}</span><span>{step.glyph}</span></div>
+        <div class="pin-face">
+          <h3>{step.name}</h3>
+          <p>{step.description}</p>
+          <div class="pin-footer"><span class="pin-number">0{i + 1}</span><span>OPENCASH</span></div>
+        </div>
+      </article>
+    ))}
+    <div class="landscape-caption">EVERY PAYMENT, BOTH DIRECTIONS, ON-CHAIN</div>
+  </div>
+</section>

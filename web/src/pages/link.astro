@@ -1,0 +1,31 @@
+---
+import App from "../layouts/App.astro";
+import Mark from "../components/Mark.astro";
+---
+
+<App title="Pay · opencash">
+  <main class="dash pay">
+    <div class="pay__card">
+      <div class="pay__head">
+        <a class="wordmark" href="/"><Mark />open<span>cash</span></a>
+        <span class="tag">Payment link</span>
+      </div>
+      <div class="pay__face">
+        <span class="card__label" data-link-company>—</span>
+        <span class="pay__amount" data-link-amount>—</span>
+        <b data-link-title>—</b>
+        <span data-link-description></span>
+      </div>
+      <form class="card" data-link-pay hidden style="display:grid;gap:var(--sp-sm)">
+        <label class="field"><span>Your name or company</span><input name="payer_name" placeholder="Northwind Inc." /></label>
+        <label class="field" data-open-amount hidden><span>Amount in USD</span><input name="amount" inputmode="decimal" placeholder="100.00" /></label>
+        <p class="form-error" data-link-error></p>
+        <button type="submit" class="btn btn--primary">Continue to payment</button>
+      </form>
+      <p class="pay__trust">Pay with USDC, ETH, SOL, BTC or USDT on the chain you already use. The business receives USDC on NEAR.</p>
+    </div>
+  </main>
+  <script>
+    import "../scripts/link/index";
+  </script>
+</App>

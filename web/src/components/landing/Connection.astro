@@ -1,0 +1,24 @@
+---
+import Mark from "../Mark.astro";
+---
+
+<section class="connection section-frame" aria-labelledby="connection-title">
+  <div class="section-heading">
+    <h2 id="connection-title">Any chain in.<br />Any chain out.</h2>
+    <p>Inbound payments arrive from any chain as exact USDC; outbound payouts leave as USDC and arrive as whatever each recipient wants. NEAR Intents does the routing, the registry contract records invoice outcomes, and every call you make is signed by your passkey and relayed without gas.</p>
+  </div>
+  <div class="connection-graphic" aria-label="Client tokens on any chain connect through NEAR Intents to a USDC business account with passkey-signed, on-chain records">
+    <svg class="connection-lines" viewBox="0 0 1000 360" preserveAspectRatio="none" aria-hidden="true">
+      <path d="M120 80H360L500 180 640 80H880M120 280H360L500 180 640 280H880M500 0V360"></path>
+      <path class="flow-line" d="M120 80H360L500 180 640 280H880"></path>
+    </svg>
+    <div class="connection-center">
+      <div class="diamond-stack" aria-hidden="true"><i></i><i></i><i></i></div><Mark class="center-mark" /><strong>open</strong><span>CASH</span>
+    </div>
+    <span class="connection-label top-left">Customers, any chain</span>
+    <span class="connection-label bottom-left">Payees, any chain</span>
+    <span class="connection-label top-right">USDC account on NEAR</span>
+    <span class="connection-label bottom-right">API + webhooks</span>
+  </div>
+  <div class="tech-strip"><span>BUILT ON</span><span class="chain-mark"><b>NEAR</b></span><span>Intents · Meta transactions</span><span>Passkey signing ↗</span></div>
+</section>

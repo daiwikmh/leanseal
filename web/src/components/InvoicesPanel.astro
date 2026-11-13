@@ -1,0 +1,11 @@
+<section class="panel" data-panel="invoices" hidden>
+  <div class="section-row">
+    <div class="switcher" role="group" aria-label="Filter invoices" data-invoice-filter>
+      <button type="button" aria-pressed="true" data-filter="all"><i class="switcher__dot switcher__dot--violet"></i>All</button>
+      <button type="button" aria-pressed="false" data-filter="open"><i class="switcher__dot switcher__dot--butter"></i>Waiting</button>
+      <button type="button" aria-pressed="false" data-filter="paid"><i class="switcher__dot switcher__dot--lime"></i>Paid</button>
+    </div>
+    <button type="button" class="btn" data-export-csv>Export CSV</button>
+  </div>
+  <div data-invoice-table class="table-wrap table-wrap--loading">Loading…</div>
+</section>

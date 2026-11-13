@@ -1,0 +1,40 @@
+---
+import { demoSteps } from "../../data/landing";
+---
+
+<section class="demo-section section-frame" id="explore" aria-labelledby="demo-title">
+  <div class="section-heading">
+    <h2 id="demo-title">Watch money move<br />both ways.</h2>
+    <p>A short walk through opencash: a customer pays from Arbitrum, your server hears about it, and payroll goes out to three chains.</p>
+  </div>
+  <div class="demo-workspace" data-demo={JSON.stringify(demoSteps)}>
+    <div class="demo-summary">
+      <span class="small-label"><i class="status-dot"></i> WALKTHROUGH</span>
+      <h3>acme.opencash.near</h3>
+      <p>Illustrative walkthrough · This demo sends no funds or transactions.</p>
+      <div class="demo-asset-mark" aria-hidden="true">
+        <svg viewBox="0 0 200 200"><path d="m100 20 80 45v75l-80 45-80-45V65Zm0 0v80m-80-35 80 35 80-35m-80 35v85m-80-45 80-40 80 40"></path></svg>
+      </div>
+      <span class="demo-caption">IN FROM ONE CHAIN, OUT TO THREE</span>
+    </div>
+    <div class="demo-flow">
+      <ol class="workflow-steps">
+        {demoSteps.map((step, i) => (
+          <li data-demo-step={i} class={i === 0 ? "current" : ""}>
+            <span class="step-number">0{i + 1}</span>
+            <span>{step.name}</span>
+            <span class="step-state">{i === 0 ? "Ready" : "Upcoming"}</span>
+          </li>
+        ))}
+      </ol>
+      <div class="demo-next">
+        <p id="demo-description" aria-live="polite">{demoSteps[0].description}</p>
+        <button class="dark-button" id="demo-advance">
+          <span>{demoSteps[0].next}</span>
+          <svg class="arrow" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"></path></svg>
+        </button>
+        <button class="reset-button" id="demo-reset">Reset demo</button>
+      </div>
+    </div>
+  </div>
+</section>

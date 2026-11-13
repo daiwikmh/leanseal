@@ -1,0 +1,26 @@
+<section class="panel" data-panel="agents" hidden>
+  <div class="home-grid payouts-grid">
+    <div class="card">
+      <span class="panel__label">New AI agent wallet</span>
+      <p class="panel__lede">Each agent gets its own NEAR account and USDC balance, separate from yours. It pays for APIs, data and MCP tools (directly or through x402 paywalls) only within the limits you set. opencash checks every payment before signing it.</p>
+      <form data-agent-form style="display:grid;gap:var(--sp-sm);margin-top:var(--sp-md)">
+        <label class="field"><span>Name</span><input name="name" placeholder="Research bot" /></label>
+        <div class="field-row">
+          <label class="field"><span>Max per payment (USD)</span><input name="per_tx_cap" inputmode="decimal" value="1.00" /></label>
+          <label class="field"><span>Max per 24 hours (USD)</span><input name="daily_cap" inputmode="decimal" value="10.00" /></label>
+        </div>
+        <label class="field"><span>Allowlist · NEAR accounts or API hosts, comma separated (empty = anyone)</span><input name="allowlist" placeholder="data-provider.near, api.example.com" /></label>
+        <p class="form-error" data-agent-error></p>
+        <button type="submit" class="btn btn--primary">Create agent with passkey</button>
+      </form>
+    </div>
+    <div class="home-right">
+      <h3 class="panel__subtitle" style="margin-top:0">Your agents</h3>
+      <div data-agent-list class="table-wrap table-wrap--loading">Loading…</div>
+      <div class="card" style="margin-top:var(--sp-md)">
+        <span class="panel__label">Agent API</span>
+        <pre class="doc-view" data-agent-snippet></pre>
+      </div>
+    </div>
+  </div>
+</section>

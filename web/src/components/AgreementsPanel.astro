@@ -1,0 +1,11 @@
+<section class="panel" data-panel="agreements" hidden>
+  <div class="section-row">
+    <div class="switcher" role="group" aria-label="Agreements" data-agreement-filter>
+      <button type="button" aria-pressed="true" data-filter="company"><i class="switcher__dot switcher__dot--violet"></i>Created by us</button>
+      <button type="button" aria-pressed="false" data-filter="party"><i class="switcher__dot switcher__dot--butter"></i>To sign</button>
+    </div>
+    <button type="button" class="btn btn--primary" data-new-agreement>New agreement</button>
+  </div>
+  <p class="panel__lede">Each party signs the document's SHA-256 fingerprint with their own NEAR account key (a NEP-413 signed message, verified against the key on chain). Documents stay encrypted; only the parties can open them.</p>
+  <div data-agreement-table class="table-wrap table-wrap--loading" style="margin-top:var(--sp-md)">Loading…</div>
+</section>

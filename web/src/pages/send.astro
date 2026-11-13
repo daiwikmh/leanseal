@@ -1,0 +1,33 @@
+---
+import App from "../layouts/App.astro";
+import Mark from "../components/Mark.astro";
+---
+
+<App title="Sign payout · opencash">
+  <main class="dash pay">
+    <div class="pay__card">
+      <div class="pay__head">
+        <a class="wordmark" href="/"><Mark />open<span>cash</span></a>
+        <span class="tag">Payout from chat</span>
+      </div>
+      <div class="card" data-send-signin>
+        <b class="company__name">Sign this payout</b>
+        <p class="panel__lede">Your chat prepared a payout. Sign in to review it; nothing moves until you confirm.</p>
+        <div class="btn-row" style="margin-top:var(--sp-md)">
+          <button type="button" class="btn btn--primary" data-send-passkey>Sign in with passkey</button>
+          {import.meta.env.DEV && <button type="button" class="btn" data-send-dev>Dev mode · skip passkey</button>}
+        </div>
+      </div>
+      <div class="card" data-send-review hidden>
+        <span class="panel__label" data-send-account></span>
+        <div class="line-items" data-send-rows></div>
+        <label class="consent"><input type="checkbox" data-send-confirm /> <span>Send these payouts. USDC leaves this account now; failed deliveries refund to it.</span></label>
+        <button type="button" class="btn btn--primary" data-send-go disabled>Send with passkey</button>
+      </div>
+      <p class="status-line" data-send-status role="status"></p>
+    </div>
+  </main>
+  <script>
+    import "../scripts/send/index";
+  </script>
+</App>

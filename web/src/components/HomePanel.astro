@@ -1,0 +1,43 @@
+<section class="panel" data-panel="home">
+  <div class="home-grid">
+    <div class="home-left">
+      <div class="wallet">
+        <div class="wallet__face">
+          <i class="wallet__dot wallet__dot--tl"></i><i class="wallet__dot wallet__dot--tr"></i>
+          <i class="wallet__dot wallet__dot--bl"></i><i class="wallet__dot wallet__dot--br"></i>
+          <span class="wallet__name" data-home-company>—</span>
+          <span class="wallet__balance" data-home-balance>$0<small>.00</small></span>
+          <span class="wallet__change">USDC on NEAR</span>
+          <span class="wallet__meta"><span data-home-account>—</span><button type="button" class="link-btn" data-home-refresh>⟳ Refresh</button></span>
+        </div>
+        <div class="wallet__actions">
+          <button type="button" class="wallet__action" data-new-invoice><span aria-hidden="true">+</span> Invoice</button>
+          <i class="wallet__divider"></i>
+          <button type="button" class="wallet__action" data-open-receive><span aria-hidden="true">↓</span> Receive</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <span class="panel__label">Move money</span>
+        <div class="quick-actions">
+          <button type="button" class="quick-action quick-action--butter" data-new-invoice><b>Invoice</b><small>Paid from any chain</small></button>
+          <button type="button" class="quick-action quick-action--coral" data-goto="payouts"><b>Pay someone</b><small>USDC to any chain</small></button>
+          <button type="button" class="quick-action quick-action--sky" data-goto="links"><b>Payment link</b><small>Reusable checkout</small></button>
+          <button type="button" class="quick-action quick-action--peach" data-goto="developers"><b>API</b><small>Keys and webhooks</small></button>
+        </div>
+      </div>
+    </div>
+
+    <div class="home-right">
+      <div class="board-widgets">
+        <div class="widget"><span class="widget__label">Paid this month</span><b class="widget__big" data-stat-paid>$0</b><span class="widget__sub" data-stat-paid-sub>0 invoices</span></div>
+        <div class="widget"><span class="widget__label">Waiting</span><b class="widget__big" data-stat-open>$0</b><span class="widget__sub" data-stat-open-sub>0 invoices</span></div>
+        <div class="widget"><span class="widget__label">Gas you paid</span><b class="widget__big">0 NEAR</b><span class="widget__sub">opencash relays every call</span></div>
+      </div>
+      <div>
+        <h3 class="panel__subtitle">Recent invoices</h3>
+        <div data-home-invoices class="table-wrap table-wrap--loading">Loading…</div>
+      </div>
+    </div>
+  </div>
+</section>

@@ -1,0 +1,110 @@
+/* ---- Dark theme ---- */
+.dash,
+.modal {
+  background: var(--paper);
+  color: var(--ink);
+}
+.dash .dash__topbar {
+  background: rgba(11, 15, 14, 0.92);
+}
+.dash .dash__topbar .wordmark,
+.dash .dash__tabs button {
+  color: #9aa39f;
+}
+.dash .dash__tabs button[aria-selected="true"],
+.dash .dash__tabs button:hover {
+  color: var(--ink);
+}
+.dash .dash__search {
+  color: var(--ink);
+}
+.dash .dash__address-chip {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+.dash .dash__address-chip:hover {
+  background: var(--surface-line);
+}
+:is(.dash, .modal) .card {
+  border: 1px solid var(--surface-line);
+}
+:is(.dash, .modal) .card--balance {
+  background: var(--lime);
+  color: var(--lime-ink);
+  border-color: var(--wallet);
+}
+.card--balance :is(.card__label, .balance-meta, .link-btn) {
+  color: var(--lime-ink);
+}
+:is(.dash, .modal) .card--balance :is(.chain-badge, .action-btn) {
+  background: var(--wallet);
+  color: var(--on-wallet);
+}
+:is(.dash, .modal) .card--balance .action-btn:hover:not(:disabled) {
+  background: var(--lime-ink);
+}
+:is(.dash, .modal) .card + .card {
+  margin-top: 0;
+}
+:is(.dash, .modal) .chain-badge,
+:is(.dash, .modal) .action-btn,
+:is(.dash, .modal) .chip {
+  background: var(--surface-hover);
+  color: var(--ink);
+}
+:is(.dash, .modal) .action-btn:hover:not(:disabled),
+:is(.dash, .modal) .chip:hover {
+  background: var(--surface-line);
+}
+:is(.dash, .modal) .chip--active,
+:is(.dash, .modal) .chip--active:hover {
+  background: var(--line);
+}
+.dash button:disabled,
+.dash input:disabled,
+.dash select:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+:is(.dash, .modal) .row-mark {
+  background: var(--surface-line);
+}
+:is(.dash, .modal) .row-mark--logo {
+  background: #fff;
+}
+:is(.dash, .modal) .change-up {
+  color: var(--trade-green);
+}
+:is(.dash, .modal) .change-down {
+  color: var(--trade-red);
+}
+:is(.dash, .modal) .link-btn {
+  border: 0;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+:is(.dash, .modal) .field input,
+:is(.dash, .modal) .field select {
+  height: var(--sp-2xl);
+}
+:is(.dash, .modal) .field select {
+  padding: 0 14px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--paper);
+  font: inherit;
+  font-size: 14px;
+  color: var(--ink);
+  width: 100%;
+}
+:is(.dash, .modal) .table-wrap {
+  overflow-x: auto;
+}
+:is(.dash, .modal) .data-table tbody tr {
+  cursor: default;
+}
+:is(.dash, .modal) .data-table tbody td {
+  white-space: nowrap;
+}
